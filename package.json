@@ -1,0 +1,28 @@
+{
+  "name": "pi-peon-ping",
+  "version": "0.1.0",
+  "description": "Pi extension for peon-ping sound notifications",
+  "keywords": ["pi-package"],
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joshuadavidthomas/pi-peon-ping"
+  },
+  "pi": {
+    "extensions": ["./src/index.ts"]
+  },
+  "scripts": {
+    "test": "bun test tests/",
+    "test:watch": "bun test tests/ --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": ">=0.50.0",
+    "@mariozechner/pi-tui": ">=0.50.0"
+  }
+}
