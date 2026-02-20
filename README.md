@@ -90,5 +90,3 @@ bun run typecheck      # Type check
 ## License
 
 pi-peon-ping is licensed under the MIT license. See the [`LICENSE`](LICENSE) file for more information.
-
-Peon-ping uses the [peon-ping](https://github.com/PeonPing/peon-ping) sound pack registry and [OpenPeon](https://github.com/PeonPing/og-packs) sound packs (CC-BY-NC-4.0).
