@@ -5,13 +5,17 @@ on:
     types: [published]
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+    secrets: inherit
+
   test:
     uses: ./.github/workflows/test.yml
     secrets: inherit
 
   publish:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [lint, test]
     environment: release
     permissions:
       contents: write
