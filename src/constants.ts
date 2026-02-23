@@ -13,6 +13,7 @@ export const DEFAULT_CONFIG: PeonConfig = {
   active_pack: "peon",
   volume: 0.5,
   enabled: true,
+  desktop_notifications: true,
   categories: {
     "session.start": true,
     "task.acknowledge": true,

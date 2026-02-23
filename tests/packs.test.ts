@@ -87,6 +87,7 @@ describe("pickSound", () => {
       active_pack: "test-pack",
       volume: 0.5,
       enabled: true,
+      desktop_notifications: true,
       categories: { "session.start": false },
       annoyed_threshold: 3,
       annoyed_window_seconds: 10,

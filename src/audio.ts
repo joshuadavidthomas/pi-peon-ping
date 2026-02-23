@@ -114,6 +114,8 @@ export function sendNotification(
   config: PeonConfig,
   uiNotify?: UiNotify,
 ): void {
+  if (!config.desktop_notifications) return;
+
   const relayUrl = getRelayUrl(config.relay_mode);
   if (relayUrl) {
     relayNotify(relayUrl, title, body).catch(() => {});

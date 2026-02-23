@@ -135,6 +135,13 @@ export function buildSettingsItems(): SettingItem[] {
       currentValue: `${Math.round(config.volume * 100)}%`,
       values: VOLUME_STEPS,
     },
+    {
+      id: "desktop_notifications",
+      label: "Desktop notifications",
+      description: "Show system notifications on task complete",
+      currentValue: config.desktop_notifications ? "on" : "off",
+      values: ["on", "off"],
+    },
   ];
 
   for (const [cat, label] of Object.entries(CATEGORY_LABELS)) {
@@ -257,6 +264,10 @@ export function createSettingsPanel(
       } else if (id === "relay_mode") {
         const config = loadConfig();
         config.relay_mode = newValue as RelayMode;
+        saveConfig(config);
+      } else if (id === "desktop_notifications") {
+        const config = loadConfig();
+        config.desktop_notifications = newValue === "on";
         saveConfig(config);
       } else if (id === "volume") {
         const config = loadConfig();
