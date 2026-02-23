@@ -1,6 +1,9 @@
-import { spawn } from "node:child_process";
-import { execSync } from "node:child_process";
+import { spawn, execSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join, dirname } from "node:path";
 import { detectPlatform, type Platform } from "./platform";
+
+export const DEFAULT_ICON_PATH = join(dirname(dirname(import.meta.path)), "assets", "peon-icon.png");
 
 export type Notifier = "osascript" | "notify-send" | "powershell";
 
@@ -38,10 +41,19 @@ export function detectNotifier(
   }
 }
 
+export function resolveIcon(packPath?: string): string {
+  if (packPath) {
+    const packIcon = join(packPath, "icon.png");
+    if (existsSync(packIcon)) return packIcon;
+  }
+  return DEFAULT_ICON_PATH;
+}
+
 export function buildNotifyCommand(
   notifier: Notifier | string,
   title: string,
   body: string,
+  iconPath?: string,
 ): NotifyCommand | null {
   const safeTitle = escapeNotificationText(title);
   const safeBody = escapeNotificationText(body);
@@ -51,15 +63,24 @@ export function buildNotifyCommand(
       const script = `display notification "${safeBody}" with title "${safeTitle}"`;
       return { bin: "osascript", args: ["-e", script] };
     }
-    case "notify-send":
-      return { bin: "notify-send", args: [title, body] };
+    case "notify-send": {
+      const args = [];
+      if (iconPath) args.push(`--icon=${iconPath}`);
+      args.push(title, body);
+      return { bin: "notify-send", args };
+    }
     case "powershell": {
+      let iconXml = "";
+      if (iconPath) {
+        const winPath = iconPath.replace(/\//g, "\\");
+        iconXml = `\n$binding = $template.GetElementsByTagName('binding')[0]\n$img = $template.CreateElement('image')\n$img.SetAttribute('placement','appLogoOverride')\n$img.SetAttribute('src','${winPath}')\n$binding.AppendChild($img) > $null`;
+      }
       const ps = `
 [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
 $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
 $text = $template.GetElementsByTagName('text')
 $text.Item(0).AppendChild($template.CreateTextNode('${safeTitle}')) > $null
-$text.Item(1).AppendChild($template.CreateTextNode('${safeBody}')) > $null
+$text.Item(1).AppendChild($template.CreateTextNode('${safeBody}')) > $null${iconXml}
 $toast = [Windows.UI.Notifications.ToastNotification]::new($template)
 [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('peon-ping').Show($toast)
 `.trim();
@@ -70,15 +91,24 @@ $toast = [Windows.UI.Notifications.ToastNotification]::new($template)
   }
 }
 
+export interface NotifyOptions {
+  platform?: Platform;
+  iconPath?: string;
+}
+
 export function sendDesktopNotification(
   title: string,
   body: string,
-  platform: Platform = detectPlatform(),
+  options: NotifyOptions | Platform = {},
 ): boolean {
+  const opts: NotifyOptions = typeof options === "string"
+    ? { platform: options }
+    : options;
+  const platform = opts.platform ?? detectPlatform();
   const notifier = detectNotifier(platform);
   if (!notifier) return false;
 
-  const cmd = buildNotifyCommand(notifier, title, body);
+  const cmd = buildNotifyCommand(notifier, title, body, opts.iconPath);
   if (!cmd) return false;
 
   try {

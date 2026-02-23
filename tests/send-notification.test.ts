@@ -70,12 +70,18 @@ describe("sendNotification", () => {
     expect(notifications[0]).toContain("Task complete");
   });
 
-  it("calls sendDesktopNotification with title and body", () => {
+  it("calls sendDesktopNotification with title, body, and icon", () => {
     mockSendDesktop.mockClear();
     mockSendDesktop.mockReturnValue(true);
     const config: PeonConfig = { ...DEFAULT_CONFIG, relay_mode: "local" };
     sendNotification("pi · test", "Done", config);
 
-    expect(mockSendDesktop).toHaveBeenCalledWith("pi · test", "Done");
+    expect(mockSendDesktop).toHaveBeenCalledTimes(1);
+    const call = mockSendDesktop.mock.calls[0] as unknown[];
+    expect(call[0]).toBe("pi · test");
+    expect(call[1]).toBe("Done");
+    const opts = call[2] as { iconPath?: string };
+    expect(opts).toHaveProperty("iconPath");
+    expect(opts.iconPath).toContain("peon-icon.png");
   });
 });

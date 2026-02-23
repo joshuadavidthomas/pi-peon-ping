@@ -1,4 +1,6 @@
 import { describe, it, expect, spyOn } from "bun:test";
+import { join } from "node:path";
+import { existsSync } from "node:fs";
 
 describe("notification", () => {
   describe("detectNotifier", () => {
@@ -72,8 +74,38 @@ describe("notification", () => {
       const cmd = buildNotifyCommand("osascript", 'say "hi"', "it's done");
       expect(cmd).not.toBeNull();
       const script = cmd!.args[cmd!.args.indexOf("-e") + 1];
-      // Should not contain unescaped double quotes that would break the AppleScript
       expect(script).not.toMatch(/(?<!\\)"{2}/);
+    });
+
+    it("includes --icon for notify-send when iconPath provided", async () => {
+      const { buildNotifyCommand } = await import("../src/notification");
+      const cmd = buildNotifyCommand("notify-send", "Hello", "World", "/path/to/icon.png");
+      expect(cmd).not.toBeNull();
+      expect(cmd!.args).toContain("--icon=/path/to/icon.png");
+    });
+
+    it("omits --icon for notify-send when no iconPath", async () => {
+      const { buildNotifyCommand } = await import("../src/notification");
+      const cmd = buildNotifyCommand("notify-send", "Hello", "World");
+      expect(cmd).not.toBeNull();
+      const hasIcon = cmd!.args.some((a: string) => a.startsWith("--icon"));
+      expect(hasIcon).toBe(false);
+    });
+
+    it("includes icon in osascript when iconPath provided", async () => {
+      // osascript doesn't support custom icons natively, so we just confirm it doesn't break
+      const { buildNotifyCommand } = await import("../src/notification");
+      const cmd = buildNotifyCommand("osascript", "Title", "Body", "/path/to/icon.png");
+      expect(cmd).not.toBeNull();
+      expect(cmd!.bin).toBe("osascript");
+    });
+
+    it("includes icon in powershell toast when iconPath provided", async () => {
+      const { buildNotifyCommand } = await import("../src/notification");
+      const cmd = buildNotifyCommand("powershell", "Title", "Body", "/path/to/icon.png");
+      expect(cmd).not.toBeNull();
+      const scriptArg = cmd!.args.find((a: string) => a.includes("icon.png"));
+      expect(scriptArg).toBeDefined();
     });
   });
 
@@ -94,11 +126,46 @@ describe("notification", () => {
     });
   });
 
+  describe("resolveIcon", () => {
+    it("returns pack icon.png when it exists", async () => {
+      const { resolveIcon } = await import("../src/notification");
+      // Use a temp dir with an icon.png to test
+      const { mkdtempSync, writeFileSync } = await import("node:fs");
+      const { tmpdir } = await import("node:os");
+      const dir = mkdtempSync(join(tmpdir(), "peon-test-"));
+      writeFileSync(join(dir, "icon.png"), "fake-png");
+
+      const result = resolveIcon(dir);
+      expect(result).toBe(join(dir, "icon.png"));
+    });
+
+    it("returns default bundled icon when pack has no icon", async () => {
+      const { resolveIcon, DEFAULT_ICON_PATH } = await import("../src/notification");
+      const { mkdtempSync } = await import("node:fs");
+      const { tmpdir } = await import("node:os");
+      const dir = mkdtempSync(join(tmpdir(), "peon-test-"));
+
+      const result = resolveIcon(dir);
+      expect(result).toBe(DEFAULT_ICON_PATH);
+    });
+
+    it("returns default icon when packPath is undefined", async () => {
+      const { resolveIcon, DEFAULT_ICON_PATH } = await import("../src/notification");
+      const result = resolveIcon(undefined);
+      expect(result).toBe(DEFAULT_ICON_PATH);
+    });
+
+    it("DEFAULT_ICON_PATH points to the vendored peon-icon.png", async () => {
+      const { DEFAULT_ICON_PATH } = await import("../src/notification");
+      expect(DEFAULT_ICON_PATH).toContain("peon-icon.png");
+      expect(existsSync(DEFAULT_ICON_PATH)).toBe(true);
+    });
+  });
+
   describe("sendDesktopNotification", () => {
     it("returns false when no notifier is available", async () => {
       const { sendDesktopNotification } = await import("../src/notification");
-      // Pass "unknown" platform explicitly
-      const result = sendDesktopNotification("Title", "Body", "unknown");
+      const result = sendDesktopNotification("Title", "Body", { platform: "unknown" });
       expect(result).toBe(false);
     });
 
@@ -106,8 +173,7 @@ describe("notification", () => {
       const writeSpy = spyOn(process.stdout, "write");
       try {
         const { sendDesktopNotification } = await import("../src/notification");
-        // Even on a real platform, should never use OSC
-        sendDesktopNotification("Title", "Body", "unknown");
+        sendDesktopNotification("Title", "Body", { platform: "unknown" });
 
         const oscCalls = writeSpy.mock.calls.filter(
           (call) => typeof call[0] === "string" && (call[0] as string).includes("\x1b]777"),
@@ -116,6 +182,16 @@ describe("notification", () => {
       } finally {
         writeSpy.mockRestore();
       }
+    });
+
+    it("accepts an iconPath option", async () => {
+      const { sendDesktopNotification } = await import("../src/notification");
+      // Should not throw when given an icon path, even on unknown platform
+      const result = sendDesktopNotification("Title", "Body", {
+        platform: "unknown",
+        iconPath: "/some/icon.png",
+      });
+      expect(result).toBe(false);
     });
   });
 });

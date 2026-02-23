@@ -1,8 +1,9 @@
 import { spawn } from "node:child_process";
+import { join } from "node:path";
 import { detectLinuxPlayer, detectPlatform, type Platform } from "./platform";
 import { saveState } from "./config";
-import { sendDesktopNotification } from "./notification";
-import { pickSound } from "./packs";
+import { resolveIcon, sendDesktopNotification } from "./notification";
+import { getPacksDir, pickSound } from "./packs";
 import { getRelayUrl, relayPlayCategory, relayNotify } from "./relay";
 import type { PeonConfig, PeonState } from "./types";
 
@@ -119,7 +120,9 @@ export function sendNotification(
     return;
   }
 
-  const sent = sendDesktopNotification(title, body);
+  const packPath = join(getPacksDir(), config.active_pack);
+  const iconPath = resolveIcon(packPath);
+  const sent = sendDesktopNotification(title, body, { iconPath });
   if (!sent && uiNotify) {
     uiNotify(`${title}: ${body}`, "info");
   }
