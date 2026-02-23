@@ -93,6 +93,14 @@ bun run test:watch     # Run tests in watch mode
 bun run typecheck      # Type check
 ```
 
+To test the extension locally without conflicting with a globally installed copy:
+
+```bash
+pi -ne -e ./src/index.ts
+```
+
+`-ne` disables extension auto-discovery, `-e` loads only the local source.
+
 ## License
 
 pi-peon-ping is licensed under the MIT license. See the [`LICENSE`](LICENSE) file for more information.
