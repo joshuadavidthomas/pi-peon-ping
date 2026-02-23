@@ -182,20 +182,26 @@ describe("getRelayUrl", () => {
 });
 
 describe("relaySetupInstructions", () => {
-  it("provides SSH instructions", () => {
-    const msg = relaySetupInstructions("ssh");
+  it("provides SSH instructions with default port", () => {
+    const msg = relaySetupInstructions({ type: "ssh", relayUrl: "http://127.0.0.1:19998" });
     expect(msg).toContain("peon relay --daemon");
     expect(msg).toContain("-R 19998:localhost:19998");
   });
 
+  it("uses port from relay URL in SSH instructions", () => {
+    const msg = relaySetupInstructions({ type: "ssh", relayUrl: "http://127.0.0.1:12345" });
+    expect(msg).toContain("-R 12345:localhost:12345");
+    expect(msg).not.toContain("19998");
+  });
+
   it("provides devcontainer instructions", () => {
-    const msg = relaySetupInstructions("devcontainer");
+    const msg = relaySetupInstructions({ type: "devcontainer", relayUrl: "http://host.docker.internal:19998" });
     expect(msg).toContain("peon relay --daemon");
     expect(msg).toContain("host machine");
   });
 
   it("provides codespaces instructions", () => {
-    const msg = relaySetupInstructions("codespaces");
+    const msg = relaySetupInstructions({ type: "codespaces", relayUrl: "http://host.docker.internal:19998" });
     expect(msg).toContain("peon relay --daemon");
     expect(msg).toContain("host machine");
   });

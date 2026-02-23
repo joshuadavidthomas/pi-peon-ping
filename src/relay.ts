@@ -1,3 +1,5 @@
+import type { RelayMode } from "./types";
+
 export type RemoteSessionType = "ssh" | "devcontainer" | "codespaces";
 
 export interface RemoteSession {
@@ -15,46 +17,34 @@ export function detectSessionType(): RemoteSessionType | null {
 }
 
 export function detectRemoteSession(): RemoteSession | null {
-  const port = process.env.PEON_RELAY_PORT || DEFAULT_RELAY_PORT;
-
   if (process.env.PEON_RELAY_URL) {
     const type = detectSessionType() || "ssh";
     return { type, relayUrl: process.env.PEON_RELAY_URL };
   }
 
-  const customHost = process.env.PEON_RELAY_HOST;
+  const type = detectSessionType();
+  if (!type) return null;
 
-  if (process.env.CODESPACES) {
-    const host = customHost || "host.docker.internal";
-    return { type: "codespaces", relayUrl: `http://${host}:${port}` };
-  }
+  const port = process.env.PEON_RELAY_PORT || DEFAULT_RELAY_PORT;
+  const defaultHost = type === "ssh" ? "127.0.0.1" : "host.docker.internal";
+  const host = process.env.PEON_RELAY_HOST || defaultHost;
 
-  if (process.env.REMOTE_CONTAINERS) {
-    const host = customHost || "host.docker.internal";
-    return { type: "devcontainer", relayUrl: `http://${host}:${port}` };
-  }
-
-  if (process.env.SSH_CONNECTION || process.env.SSH_TTY || process.env.SSH_CLIENT) {
-    const host = customHost || "127.0.0.1";
-    return { type: "ssh", relayUrl: `http://${host}:${port}` };
-  }
-
-  return null;
+  return { type, relayUrl: `http://${host}:${port}` };
 }
 
-export function getRelayUrl(relayMode: "auto" | "local" | "relay"): string | null {
+export function getRelayUrl(relayMode: RelayMode): string | null {
   if (relayMode === "local") return null;
 
+  const session = detectRemoteSession();
+  if (session) return session.relayUrl;
+
   if (relayMode === "relay") {
-    if (process.env.PEON_RELAY_URL) return process.env.PEON_RELAY_URL;
     const host = process.env.PEON_RELAY_HOST || "127.0.0.1";
     const port = process.env.PEON_RELAY_PORT || DEFAULT_RELAY_PORT;
     return `http://${host}:${port}`;
   }
 
-  // Auto mode: use relay only when remote session detected
-  const session = detectRemoteSession();
-  return session?.relayUrl ?? null;
+  return null;
 }
 
 export async function checkRelayHealth(relayUrl: string): Promise<boolean> {
@@ -94,10 +84,15 @@ export async function relayNotify(relayUrl: string, title: string, body: string)
   }
 }
 
-export function relaySetupInstructions(sessionType: RemoteSessionType): string {
-  switch (sessionType) {
+export function relaySetupInstructions(session: RemoteSession): string {
+  let port = DEFAULT_RELAY_PORT;
+  try {
+    port = new URL(session.relayUrl).port || DEFAULT_RELAY_PORT;
+  } catch {}
+
+  switch (session.type) {
     case "ssh":
-      return "Run 'peon relay --daemon' locally, then SSH with '-R 19998:localhost:19998'";
+      return `Run 'peon relay --daemon' locally, then SSH with '-R ${port}:localhost:${port}'`;
     case "devcontainer":
       return "Run 'peon relay --daemon' on your host machine";
     case "codespaces":

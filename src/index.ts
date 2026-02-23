@@ -41,7 +41,7 @@ export default function (pi: ExtensionAPI) {
       if (!healthy) {
         const session = detectRemoteSession();
         const instructions = session
-          ? relaySetupInstructions(session.type)
+          ? relaySetupInstructions(session)
           : `Ensure relay is running at ${relayUrl}`;
         ctx.ui.notify(`peon-ping: relay unreachable at ${relayUrl}. ${instructions}`, "warning");
       }
@@ -60,10 +60,9 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("agent_start", async (_event, ctx) => {
-    if (!shouldPlaySounds(ctx)) return;
-
     config = loadConfig();
     state = loadState();
+    if (!shouldPlaySounds(ctx)) return;
 
     const now = Date.now();
     const window = config.annoyed_window_seconds * 1000;
@@ -79,10 +78,9 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("agent_end", async (_event, ctx) => {
-    if (!shouldPlaySounds(ctx)) return;
-
     config = loadConfig();
     state = loadState();
+    if (!shouldPlaySounds(ctx)) return;
 
     const now = Date.now();
     if (now - state.last_stop_time < 5000) return;
@@ -115,7 +113,9 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      if (!hasPacks()) {
+      config = loadConfig();
+
+      if (!hasPacks() && !getRelayUrl(config.relay_mode)) {
         const ok = await ctx.ui.confirm(
           "peon-ping",
           "No sound packs installed. Download default packs now?",

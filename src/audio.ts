@@ -104,8 +104,8 @@ export function playSound(file: string, volume: number): void {
   }
 }
 
-export function sendNotification(title: string, body: string, config?: PeonConfig): void {
-  const relayUrl = config ? getRelayUrl(config.relay_mode) : null;
+export function sendNotification(title: string, body: string, config: PeonConfig): void {
+  const relayUrl = getRelayUrl(config.relay_mode);
   if (relayUrl) {
     relayNotify(relayUrl, title, body).catch(() => {});
     return;
