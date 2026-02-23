@@ -1,14 +1,10 @@
 import { spawn, execSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { homedir } from "node:os";
 import { DATA_DIR } from "./constants";
 import { detectPlatform, type Platform } from "./platform";
 
 export const DEFAULT_ICON_PATH = join(DATA_DIR, "peon-icon.png");
-export const DEFAULT_ICON_NAME = "peon-ping";
-const HICOLOR_ICON_DIR = join(homedir(), ".local", "share", "icons", "hicolor", "64x64", "apps");
-const HICOLOR_ICON_PATH = join(HICOLOR_ICON_DIR, "peon-ping.png");
 
 export type Notifier = "osascript" | "notify-send" | "powershell";
 
@@ -46,24 +42,11 @@ export function detectNotifier(
   }
 }
 
-export function installIcon(): void {
-  if (!existsSync(DEFAULT_ICON_PATH)) return;
-  if (existsSync(HICOLOR_ICON_PATH)) return;
-  try {
-    mkdirSync(HICOLOR_ICON_DIR, { recursive: true });
-    copyFileSync(DEFAULT_ICON_PATH, HICOLOR_ICON_PATH);
-    execSync("gtk-update-icon-cache -f -t " + join(homedir(), ".local", "share", "icons", "hicolor"), {
-      stdio: "ignore",
-    });
-  } catch {}
-}
-
 export function resolveIcon(packPath?: string): string {
   if (packPath) {
     const packIcon = join(packPath, "icon.png");
     if (existsSync(packIcon)) return packIcon;
   }
-  if (existsSync(HICOLOR_ICON_PATH)) return DEFAULT_ICON_NAME;
   return DEFAULT_ICON_PATH;
 }
 

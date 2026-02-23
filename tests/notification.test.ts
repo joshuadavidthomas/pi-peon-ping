@@ -138,21 +138,20 @@ describe("notification", () => {
       expect(result).toBe(join(dir, "icon.png"));
     });
 
-    it("returns a default icon when pack has no icon", async () => {
-      const { resolveIcon, DEFAULT_ICON_PATH, DEFAULT_ICON_NAME } = await import("../src/notification");
+    it("returns default icon path when pack has no icon", async () => {
+      const { resolveIcon, DEFAULT_ICON_PATH } = await import("../src/notification");
       const { mkdtempSync } = await import("node:fs");
       const { tmpdir } = await import("node:os");
       const dir = mkdtempSync(join(tmpdir(), "peon-test-"));
 
       const result = resolveIcon(dir);
-      // Returns icon name if installed to hicolor, otherwise file path
-      expect([DEFAULT_ICON_PATH, DEFAULT_ICON_NAME]).toContain(result);
+      expect(result).toBe(DEFAULT_ICON_PATH);
     });
 
-    it("returns a default icon when packPath is undefined", async () => {
-      const { resolveIcon, DEFAULT_ICON_PATH, DEFAULT_ICON_NAME } = await import("../src/notification");
+    it("returns default icon path when packPath is undefined", async () => {
+      const { resolveIcon, DEFAULT_ICON_PATH } = await import("../src/notification");
       const result = resolveIcon(undefined);
-      expect([DEFAULT_ICON_PATH, DEFAULT_ICON_NAME]).toContain(result);
+      expect(result).toBe(DEFAULT_ICON_PATH);
     });
 
     it("DEFAULT_ICON_PATH points to peon-icon.png in data dir", async () => {
