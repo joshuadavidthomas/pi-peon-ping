@@ -15,6 +15,7 @@ export interface PeonConfig {
   active_pack: string;
   volume: number;
   enabled: boolean;
+  desktop_notifications: boolean;
   categories: Record<string, boolean>;
   annoyed_threshold: number;
   annoyed_window_seconds: number;
