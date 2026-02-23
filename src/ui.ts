@@ -13,9 +13,8 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { killPreviousSound, playSound } from "./audio";
 import { loadConfig, loadState, saveConfig, saveState } from "./config";
-import { DEFAULT_PACK_NAMES } from "./constants";
+import { CATEGORY_LABELS, DEFAULT_PACK_NAMES, VOLUME_STEPS } from "./constants";
 import { downloadPack, fetchRegistry, getPacksDir, listPacks, loadManifest, pickSound } from "./packs";
-import { CATEGORY_LABELS, VOLUME_STEPS } from "./constants";
 import { detectRemoteSession, getRelayUrl } from "./relay";
 import type { RelayMode } from "./types";
 
