@@ -76,6 +76,12 @@ Open the settings panel:
 | Linux | `pw-play`, `paplay`, `ffplay`, `mpv`, `play`, or `aplay` (first found) |
 | WSL | PowerShell `MediaPlayer` |
 
+## Remote development
+
+The extension auto-detects SSH sessions, devcontainers, and Codespaces, and routes audio through the peon-ping relay running on your local machine. See the [peon-ping remote development docs](https://github.com/PeonPing/peon-ping#remote-development-ssh--devcontainers--codespaces) for relay setup. The relay mode can be configured in `/peon` settings (`auto` / `local` / `relay`).
+
+## Config and data
+
 The extension also picks up existing packs from `~/.claude/hooks/peon-ping/` if you have a Claude Code installation. Config and state are stored in `~/.config/peon-ping/`.
 
 ## Development
