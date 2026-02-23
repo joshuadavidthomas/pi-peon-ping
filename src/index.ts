@@ -12,6 +12,7 @@ import { basename } from "node:path";
 import { playCategorySound, sendNotification } from "./audio";
 import { ensureDirs, loadConfig, loadState, saveState } from "./config";
 import { listPacks } from "./packs";
+import { checkRelayHealth, detectRemoteSession, getRelayUrl, relaySetupInstructions } from "./relay";
 import { createSettingsPanel, runInstall } from "./ui";
 
 export default function (pi: ExtensionAPI) {
@@ -22,19 +23,35 @@ export default function (pi: ExtensionAPI) {
 
   const hasPacks = () => listPacks().length > 0;
 
-  const shouldPlaySounds = (ctx: { hasUI: boolean }) =>
-    ctx.hasUI && !installing && hasPacks();
+  const shouldPlaySounds = (ctx: { hasUI: boolean }) => {
+    if (!ctx.hasUI || installing) return false;
+    const relayUrl = getRelayUrl(config.relay_mode);
+    return relayUrl !== null || hasPacks();
+  };
 
   pi.on("session_start", async (_event, ctx) => {
     if (!ctx.hasUI) return;
 
-    if (!hasPacks()) {
+    config = loadConfig();
+    state = loadState();
+
+    const relayUrl = getRelayUrl(config.relay_mode);
+    if (relayUrl) {
+      const healthy = await checkRelayHealth(relayUrl);
+      if (!healthy) {
+        const session = detectRemoteSession();
+        const instructions = session
+          ? relaySetupInstructions(session.type)
+          : `Ensure relay is running at ${relayUrl}`;
+        ctx.ui.notify(`peon-ping: relay unreachable at ${relayUrl}. ${instructions}`, "warning");
+      }
+    }
+
+    if (!relayUrl && !hasPacks()) {
       ctx.ui.notify("peon-ping: no sound packs. Run /peon install", "warning");
       return;
     }
 
-    config = loadConfig();
-    state = loadState();
     state.session_start_time = Date.now();
     state.prompt_timestamps = [];
     saveState(state);
@@ -78,7 +95,7 @@ export default function (pi: ExtensionAPI) {
 
     if (config.enabled && !state.paused) {
       const project = basename(ctx.cwd);
-      sendNotification(`pi · ${project}`, "Task complete");
+      sendNotification(`pi · ${project}`, "Task complete", config);
     }
   });
 

@@ -16,6 +16,8 @@ import { loadConfig, loadState, saveConfig, saveState } from "./config";
 import { DEFAULT_PACK_NAMES } from "./constants";
 import { downloadPack, fetchRegistry, getPacksDir, listPacks, loadManifest, pickSound } from "./packs";
 import { CATEGORY_LABELS, VOLUME_STEPS } from "./constants";
+import { detectRemoteSession, getRelayUrl } from "./relay";
+import type { RelayMode } from "./types";
 
 export function createPackPickerSubmenu(
   currentPack: string,
@@ -80,6 +82,14 @@ export function buildSettingsItems(): SettingItem[] {
   const packs = listPacks();
   const activePack = packs.find((p) => p.name === config.active_pack);
 
+  const session = detectRemoteSession();
+  const relayUrl = getRelayUrl(config.relay_mode);
+  const relayDescription = relayUrl
+    ? `→ ${relayUrl}${session ? ` (${session.type})` : ""}`
+    : session
+      ? `${session.type} detected, mode is "${config.relay_mode}"`
+      : "No remote session detected";
+
   const items: SettingItem[] = [
     {
       id: "sounds",
@@ -87,6 +97,13 @@ export function buildSettingsItems(): SettingItem[] {
       description: "Master toggle for all sound playback",
       currentValue: state.paused ? "paused" : "active",
       values: ["active", "paused"],
+    },
+    {
+      id: "relay_mode",
+      label: "Relay",
+      description: relayDescription,
+      currentValue: config.relay_mode,
+      values: ["auto", "local", "relay"] as RelayMode[],
     },
     {
       id: "pack",
@@ -238,6 +255,10 @@ export function createSettingsPanel(
         const state = loadState();
         state.paused = newValue === "paused";
         saveState(state);
+      } else if (id === "relay_mode") {
+        const config = loadConfig();
+        config.relay_mode = newValue as RelayMode;
+        saveConfig(config);
       } else if (id === "volume") {
         const config = loadConfig();
         config.volume = parseInt(newValue, 10) / 100;

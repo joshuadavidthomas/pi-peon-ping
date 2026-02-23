@@ -90,6 +90,7 @@ describe("pickSound", () => {
       categories: { "session.start": false },
       annoyed_threshold: 3,
       annoyed_window_seconds: 10,
+      relay_mode: "auto",
     };
     const state: PeonState = {
       paused: false,

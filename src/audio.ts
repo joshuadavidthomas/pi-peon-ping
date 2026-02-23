@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { detectLinuxPlayer, detectPlatform, type Platform } from "./platform";
 import { saveState } from "./config";
 import { pickSound } from "./packs";
+import { getRelayUrl, relayPlayCategory, relayNotify } from "./relay";
 import type { PeonConfig, PeonState } from "./types";
 
 const PLATFORM: Platform = detectPlatform();
@@ -103,12 +104,23 @@ export function playSound(file: string, volume: number): void {
   }
 }
 
-export function sendNotification(title: string, body: string): void {
+export function sendNotification(title: string, body: string, config?: PeonConfig): void {
+  const relayUrl = config ? getRelayUrl(config.relay_mode) : null;
+  if (relayUrl) {
+    relayNotify(relayUrl, title, body).catch(() => {});
+    return;
+  }
   process.stdout.write(`\x1b]777;notify;${title};${body}\x07`);
 }
 
 export function playCategorySound(category: string, config: PeonConfig, state: PeonState): void {
   if (!config.enabled || state.paused) return;
+
+  const relayUrl = getRelayUrl(config.relay_mode);
+  if (relayUrl) {
+    relayPlayCategory(relayUrl, category).catch(() => {});
+    return;
+  }
 
   const sound = pickSound(category, config, state);
   if (sound) {
