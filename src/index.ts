@@ -77,6 +77,15 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
+  pi.on("tool_execution_end", async (event, ctx) => {
+    if (!event.isError) return;
+    if (!shouldPlaySounds(ctx)) return;
+
+    config = loadConfig();
+    state = loadState();
+    playCategorySound("task.error", config, state);
+  });
+
   pi.on("agent_end", async (_event, ctx) => {
     config = loadConfig();
     state = loadState();
