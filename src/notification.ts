@@ -1,9 +1,10 @@
 import { spawn, execSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
+import { DATA_DIR } from "./constants";
 import { detectPlatform, type Platform } from "./platform";
 
-export const DEFAULT_ICON_PATH = join(dirname(dirname(import.meta.path)), "assets", "peon-icon.png");
+export const DEFAULT_ICON_PATH = join(DATA_DIR, "peon-icon.png");
 
 export type Notifier = "osascript" | "notify-send" | "powershell";
 

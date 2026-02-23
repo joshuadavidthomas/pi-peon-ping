@@ -1,6 +1,5 @@
 import { describe, it, expect, spyOn } from "bun:test";
 import { join } from "node:path";
-import { existsSync } from "node:fs";
 
 describe("notification", () => {
   describe("detectNotifier", () => {
@@ -155,10 +154,10 @@ describe("notification", () => {
       expect(result).toBe(DEFAULT_ICON_PATH);
     });
 
-    it("DEFAULT_ICON_PATH points to the vendored peon-icon.png", async () => {
+    it("DEFAULT_ICON_PATH points to peon-icon.png in data dir", async () => {
       const { DEFAULT_ICON_PATH } = await import("../src/notification");
       expect(DEFAULT_ICON_PATH).toContain("peon-icon.png");
-      expect(existsSync(DEFAULT_ICON_PATH)).toBe(true);
+      expect(DEFAULT_ICON_PATH).toContain("peon-ping");
     });
   });
 
