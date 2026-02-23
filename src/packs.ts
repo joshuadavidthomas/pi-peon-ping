@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
-import { mkdir } from "node:fs/promises";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { LEGACY_PACKS, PACKS_DIR, FALLBACK_REPO, FALLBACK_REF, REGISTRY_URL } from "./constants";
 import type { PackManifest, PeonConfig, PeonState, Registry, RegistryPack } from "./types";
 

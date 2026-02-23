@@ -16,6 +16,7 @@ describe("constants", () => {
     expect(DEFAULT_CONFIG.enabled).toBe(true);
     expect(DEFAULT_CONFIG.annoyed_threshold).toBe(3);
     expect(DEFAULT_CONFIG.annoyed_window_seconds).toBe(10);
+    expect(DEFAULT_CONFIG.relay_mode).toBe("auto");
   });
 
   it("DEFAULT_CONFIG categories match CATEGORY_LABELS keys", () => {

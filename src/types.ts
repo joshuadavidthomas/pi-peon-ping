@@ -9,6 +9,8 @@ export interface PackManifest {
   categories: Record<string, { sounds: SoundEntry[] }>;
 }
 
+export type RelayMode = "auto" | "local" | "relay";
+
 export interface PeonConfig {
   active_pack: string;
   volume: number;
@@ -16,6 +18,7 @@ export interface PeonConfig {
   categories: Record<string, boolean>;
   annoyed_threshold: number;
   annoyed_window_seconds: number;
+  relay_mode: RelayMode;
 }
 
 export interface PeonState {

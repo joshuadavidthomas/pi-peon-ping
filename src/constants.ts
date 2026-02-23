@@ -24,6 +24,7 @@ export const DEFAULT_CONFIG: PeonConfig = {
   },
   annoyed_threshold: 3,
   annoyed_window_seconds: 10,
+  relay_mode: "auto",
 };
 
 export const DEFAULT_STATE: PeonState = {
