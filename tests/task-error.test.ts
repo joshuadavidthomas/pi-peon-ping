@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, mock, afterEach } from "bun:test";
 
 import { playCategorySound } from "../src/audio";
 import { DEFAULT_CONFIG, DEFAULT_STATE } from "../src/constants";
@@ -34,9 +34,11 @@ describe("task.error event handling", () => {
     playCategorySound("task.error", config, state);
   });
 
-  describe("extension registers tool_execution_end handler", () => {
+  describe("extension wiring", () => {
     let handlers: Record<string, Function>;
     let mockPi: any;
+    const mockPlayCategorySound = mock(() => {});
+    const mockSendNotification = mock(() => {});
 
     beforeEach(() => {
       handlers = {};
@@ -46,59 +48,72 @@ describe("task.error event handling", () => {
         },
         registerCommand: () => {},
       };
+      mockPlayCategorySound.mockClear();
+      mockSendNotification.mockClear();
+
+      mock.module("../src/audio", () => ({
+        playCategorySound: mockPlayCategorySound,
+        sendNotification: mockSendNotification,
+      }));
+    });
+
+    afterEach(() => {
+      mock.restore();
     });
 
     it("registers a tool_execution_end handler", async () => {
-      const initExtension = (await import("../src/index")).default;
+      const { default: initExtension } = await import("../src/index");
       initExtension(mockPi);
 
       expect(handlers["tool_execution_end"]).toBeDefined();
       expect(typeof handlers["tool_execution_end"]).toBe("function");
     });
 
-    it("handler is called with error events", async () => {
-      const initExtension = (await import("../src/index")).default;
+    it("plays task.error sound on error tool execution", async () => {
+      const { default: initExtension } = await import("../src/index");
       initExtension(mockPi);
 
       const handler = handlers["tool_execution_end"];
-      expect(handler).toBeDefined();
+      await handler(
+        { type: "tool_execution_end", toolCallId: "t-1", toolName: "bash", result: "fail", isError: true },
+        { hasUI: true },
+      );
 
-      // The handler should not throw when called with an error event
-      // (it will try to play a sound but we don't have packs installed,
-      // so playCategorySound will gracefully no-op)
-      const errorEvent = {
-        type: "tool_execution_end" as const,
-        toolCallId: "test-123",
-        toolName: "bash",
-        result: "command failed",
-        isError: true,
-      };
-
-      const ctx = { hasUI: true };
-
-      // Should not throw
-      await handler(errorEvent, ctx);
+      const errorCalls = mockPlayCategorySound.mock.calls.filter(
+        (call: unknown[]) => call[0] === "task.error",
+      );
+      expect(errorCalls.length).toBe(1);
     });
 
-    it("handler does not play sound for non-error events", async () => {
-      const initExtension = (await import("../src/index")).default;
+    it("does not play sound on successful tool execution", async () => {
+      const { default: initExtension } = await import("../src/index");
       initExtension(mockPi);
 
+      // Clear any calls from extension init (ensureDirs, etc.)
+      mockPlayCategorySound.mockClear();
+
       const handler = handlers["tool_execution_end"];
-      expect(handler).toBeDefined();
+      await handler(
+        { type: "tool_execution_end", toolCallId: "t-2", toolName: "bash", result: "ok", isError: false },
+        { hasUI: true },
+      );
 
-      const successEvent = {
-        type: "tool_execution_end" as const,
-        toolCallId: "test-456",
-        toolName: "bash",
-        result: "ok",
-        isError: false,
-      };
+      expect(mockPlayCategorySound).not.toHaveBeenCalled();
+    });
 
-      const ctx = { hasUI: true };
+    it("does not play sound when hasUI is false", async () => {
+      const { default: initExtension } = await import("../src/index");
+      initExtension(mockPi);
 
-      // Should not throw — and should skip since isError is false
-      await handler(successEvent, ctx);
+      mockPlayCategorySound.mockClear();
+
+      const handler = handlers["tool_execution_end"];
+      await handler(
+        { type: "tool_execution_end", toolCallId: "t-3", toolName: "bash", result: "fail", isError: true },
+        { hasUI: false },
+      );
+
+      expect(mockPlayCategorySound).not.toHaveBeenCalled();
     });
   });
 });
