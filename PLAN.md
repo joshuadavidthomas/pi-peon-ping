@@ -82,7 +82,7 @@ Push notifications via ntfy.sh, Pushover, or Telegram. Would require:
 ## Recommended Priority
 
 1. ~~**Hook up `task.error`** — trivial, just add a `tool_execution_end` handler checking `isError`~~ ✅
-2. **Better desktop notifications** — replace OSC with `ctx.ui.notify()` and/or platform-native commands
+2. ~~**Better desktop notifications** — replace OSC with `ctx.ui.notify()` and/or platform-native commands~~ ✅
 3. **`silent_window_seconds`** config — make the short-task filter configurable instead of hardcoded 3s
 4. **`path_rules`** — per-project pack selection using `ctx.cwd`
 5. **Pack rotation** — random/round-robin across sessions

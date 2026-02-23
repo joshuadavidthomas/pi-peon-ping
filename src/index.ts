@@ -103,7 +103,12 @@ export default function (pi: ExtensionAPI) {
 
     if (config.enabled && !state.paused) {
       const project = basename(ctx.cwd);
-      sendNotification(`pi · ${project}`, "Task complete", config);
+      sendNotification(
+        `pi · ${project}`,
+        "Task complete",
+        config,
+        ctx.hasUI ? ctx.ui.notify.bind(ctx.ui) : undefined,
+      );
     }
   });
 
