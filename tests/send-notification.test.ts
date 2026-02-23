@@ -82,6 +82,6 @@ describe("sendNotification", () => {
     expect(call[1]).toBe("Done");
     const opts = call[2] as { iconPath?: string };
     expect(opts).toHaveProperty("iconPath");
-    expect(opts.iconPath).toContain("peon-icon.png");
+    expect(opts.iconPath).toMatch(/peon-ping|peon-icon\.png/);
   });
 });

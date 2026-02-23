@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { CONFIG_PATH, DATA_DIR, DEFAULT_CONFIG, DEFAULT_STATE, PACKS_DIR, STATE_PATH } from "./constants";
-import { DEFAULT_ICON_PATH } from "./notification";
+import { DEFAULT_ICON_PATH, installIcon } from "./notification";
 import type { PeonConfig, PeonState } from "./types";
 
 const ICON_URL = "https://raw.githubusercontent.com/PeonPing/peon-ping/main/docs/peon-icon.png";
@@ -9,6 +9,7 @@ export function ensureDirs(): void {
   mkdirSync(DATA_DIR, { recursive: true });
   mkdirSync(PACKS_DIR, { recursive: true });
   ensureDefaultIcon();
+  installIcon();
 }
 
 function ensureDefaultIcon(): void {
