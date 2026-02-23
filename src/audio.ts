@@ -115,6 +115,7 @@ export function sendNotification(title: string, body: string, config: PeonConfig
 
 export function playCategorySound(category: string, config: PeonConfig, state: PeonState): void {
   if (!config.enabled || state.paused) return;
+  if (!config.categories[category]) return;
 
   const relayUrl = getRelayUrl(config.relay_mode);
   if (relayUrl) {
