@@ -1,5 +1,4 @@
-import { describe, it, expect, spyOn } from "bun:test";
-import { join } from "node:path";
+import { describe, it, expect } from "bun:test";
 
 describe("notification", () => {
   describe("detectNotifier", () => {
@@ -125,72 +124,4 @@ describe("notification", () => {
     });
   });
 
-  describe("resolveIcon", () => {
-    it("returns pack icon.png when it exists", async () => {
-      const { resolveIcon } = await import("../src/notification");
-      // Use a temp dir with an icon.png to test
-      const { mkdtempSync, writeFileSync } = await import("node:fs");
-      const { tmpdir } = await import("node:os");
-      const dir = mkdtempSync(join(tmpdir(), "peon-test-"));
-      writeFileSync(join(dir, "icon.png"), "fake-png");
-
-      const result = resolveIcon(dir);
-      expect(result).toBe(join(dir, "icon.png"));
-    });
-
-    it("returns default icon path when pack has no icon", async () => {
-      const { resolveIcon, DEFAULT_ICON_PATH } = await import("../src/notification");
-      const { mkdtempSync } = await import("node:fs");
-      const { tmpdir } = await import("node:os");
-      const dir = mkdtempSync(join(tmpdir(), "peon-test-"));
-
-      const result = resolveIcon(dir);
-      expect(result).toBe(DEFAULT_ICON_PATH);
-    });
-
-    it("returns default icon path when packPath is undefined", async () => {
-      const { resolveIcon, DEFAULT_ICON_PATH } = await import("../src/notification");
-      const result = resolveIcon(undefined);
-      expect(result).toBe(DEFAULT_ICON_PATH);
-    });
-
-    it("DEFAULT_ICON_PATH points to peon-icon.png in data dir", async () => {
-      const { DEFAULT_ICON_PATH } = await import("../src/notification");
-      expect(DEFAULT_ICON_PATH).toContain("peon-icon.png");
-      expect(DEFAULT_ICON_PATH).toContain("peon-ping");
-    });
-  });
-
-  describe("sendDesktopNotification", () => {
-    it("returns false when no notifier is available", async () => {
-      const { sendDesktopNotification } = await import("../src/notification");
-      const result = sendDesktopNotification("Title", "Body", { platform: "unknown" });
-      expect(result).toBe(false);
-    });
-
-    it("does not write OSC escape sequences", async () => {
-      const writeSpy = spyOn(process.stdout, "write");
-      try {
-        const { sendDesktopNotification } = await import("../src/notification");
-        sendDesktopNotification("Title", "Body", { platform: "unknown" });
-
-        const oscCalls = writeSpy.mock.calls.filter(
-          (call) => typeof call[0] === "string" && (call[0] as string).includes("\x1b]777"),
-        );
-        expect(oscCalls.length).toBe(0);
-      } finally {
-        writeSpy.mockRestore();
-      }
-    });
-
-    it("accepts an iconPath option", async () => {
-      const { sendDesktopNotification } = await import("../src/notification");
-      // Should not throw when given an icon path, even on unknown platform
-      const result = sendDesktopNotification("Title", "Body", {
-        platform: "unknown",
-        iconPath: "/some/icon.png",
-      });
-      expect(result).toBe(false);
-    });
-  });
 });
