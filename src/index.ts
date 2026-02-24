@@ -96,7 +96,7 @@ export default function (pi: ExtensionAPI) {
     if (now - state.last_stop_time < 5000) return;
     state.last_stop_time = now;
 
-    const silentMs = (config.silent_window_seconds ?? 0) * 1000;
+    const silentMs = config.silent_window_seconds * 1000;
     if (silentMs > 0 && now - state.session_start_time < silentMs) return;
 
     saveState(state);

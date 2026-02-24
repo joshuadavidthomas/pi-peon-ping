@@ -3,7 +3,6 @@ import { CONFIG_PATH, DATA_DIR, DEFAULT_CONFIG, DEFAULT_STATE, PACKS_DIR, STATE_
 import { DEFAULT_ICON_PATH } from "./notification";
 import type { PeonConfig, PeonState } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function migrateConfig(raw: Record<string, any>): Record<string, any> {
   if (raw.active_pack !== undefined) {
     if (raw.default_pack === undefined) {

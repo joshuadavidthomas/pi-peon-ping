@@ -1,7 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { describe, it, expect, beforeEach } from "bun:test";
 
 describe("config parity with upstream peon-ping", () => {
   describe("PeonConfig type has all upstream fields", () => {
@@ -48,17 +45,6 @@ describe("config parity with upstream peon-ping", () => {
   });
 
   describe("active_pack → default_pack migration", () => {
-    let tempDir: string;
-
-    beforeEach(() => {
-      tempDir = join(tmpdir(), `peon-ping-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-      mkdirSync(tempDir, { recursive: true });
-    });
-
-    afterEach(() => {
-      rmSync(tempDir, { recursive: true, force: true });
-    });
-
     it("migrateConfig moves active_pack to default_pack", async () => {
       const { migrateConfig } = await import("../src/config");
       const raw = { active_pack: "glados", volume: 0.8 };
