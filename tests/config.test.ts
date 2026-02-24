@@ -24,7 +24,7 @@ describe("config serialization", () => {
 
   it("round-trips config through JSON", () => {
     const config = {
-      active_pack: "glados",
+      default_pack: "glados",
       volume: 0.7,
       enabled: true,
       categories: {
@@ -43,7 +43,7 @@ describe("config serialization", () => {
     writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
     const loaded = JSON.parse(readFileSync(configPath, "utf8"));
 
-    expect(loaded.active_pack).toBe("glados");
+    expect(loaded.default_pack).toBe("glados");
     expect(loaded.volume).toBe(0.7);
     expect(loaded.categories["task.acknowledge"]).toBe(false);
     expect(loaded.annoyed_threshold).toBe(5);
@@ -68,7 +68,7 @@ describe("config serialization", () => {
 
   it("merges partial config with defaults", () => {
     const DEFAULT_CONFIG = {
-      active_pack: "peon",
+      default_pack: "peon",
       volume: 0.5,
       enabled: true,
       categories: {
@@ -84,7 +84,7 @@ describe("config serialization", () => {
       annoyed_window_seconds: 10,
     };
 
-    const partial = { active_pack: "duke_nukem", categories: { "user.spam": false } };
+    const partial = { default_pack: "duke_nukem", categories: { "user.spam": false } };
     writeFileSync(configPath, JSON.stringify(partial));
 
     const raw = JSON.parse(readFileSync(configPath, "utf8"));
@@ -94,7 +94,7 @@ describe("config serialization", () => {
       categories: { ...DEFAULT_CONFIG.categories, ...raw.categories },
     };
 
-    expect(merged.active_pack).toBe("duke_nukem");
+    expect(merged.default_pack).toBe("duke_nukem");
     expect(merged.volume).toBe(0.5); // from default
     expect(merged.categories["user.spam"]).toBe(false); // overridden
     expect(merged.categories["session.start"]).toBe(true); // from default

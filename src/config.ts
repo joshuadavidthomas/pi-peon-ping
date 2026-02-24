@@ -3,6 +3,17 @@ import { CONFIG_PATH, DATA_DIR, DEFAULT_CONFIG, DEFAULT_STATE, PACKS_DIR, STATE_
 import { DEFAULT_ICON_PATH } from "./notification";
 import type { PeonConfig, PeonState } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function migrateConfig(raw: Record<string, any>): Record<string, any> {
+  if (raw.active_pack !== undefined) {
+    if (raw.default_pack === undefined) {
+      raw.default_pack = raw.active_pack;
+    }
+    delete raw.active_pack;
+  }
+  return raw;
+}
+
 const ICON_URL = "https://raw.githubusercontent.com/PeonPing/peon-ping/main/docs/peon-icon.png";
 
 export function ensureDirs(): void {
@@ -27,7 +38,8 @@ function ensureDefaultIcon(): void {
 export function loadConfig(): PeonConfig {
   try {
     const raw = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
-    return { ...DEFAULT_CONFIG, ...raw, categories: { ...DEFAULT_CONFIG.categories, ...raw.categories } };
+    const migrated = migrateConfig(raw);
+    return { ...DEFAULT_CONFIG, ...migrated, categories: { ...DEFAULT_CONFIG.categories, ...migrated.categories } };
   } catch {
     return { ...DEFAULT_CONFIG };
   }

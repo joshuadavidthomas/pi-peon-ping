@@ -10,7 +10,7 @@ export const STATE_PATH = join(DATA_DIR, "state.json");
 export const LEGACY_PACKS = join(homedir(), ".claude", "hooks", "peon-ping", "packs");
 
 export const DEFAULT_CONFIG: PeonConfig = {
-  active_pack: "peon",
+  default_pack: "peon",
   volume: 0.5,
   enabled: true,
   desktop_notifications: true,
@@ -25,6 +25,13 @@ export const DEFAULT_CONFIG: PeonConfig = {
   },
   annoyed_threshold: 3,
   annoyed_window_seconds: 10,
+  silent_window_seconds: 0,
+  suppress_subagent_complete: false,
+  pack_rotation: [],
+  pack_rotation_mode: "random",
+  path_rules: [],
+  session_ttl_days: 7,
+  headphones_only: false,
   relay_mode: "auto",
 };
 

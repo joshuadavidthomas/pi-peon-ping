@@ -49,7 +49,7 @@ export function pickSound(
   if (!config.categories[category]) return null;
 
   const packsDir = getPacksDir();
-  const packPath = join(packsDir, config.active_pack);
+  const packPath = join(packsDir, config.default_pack);
   const manifest = loadManifest(packPath);
   if (!manifest) return null;
 

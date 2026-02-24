@@ -30,17 +30,18 @@ The extension defines `task.error`, `input.required`, and `resource.limit` categ
 | Permission requests | `input.required` | Detect when the agent is waiting for user input |
 | Session shutdown | `session.end` | `session_shutdown` event |
 
-### 2. Configuration Options
+### ~~2. Configuration Options~~ ✅
 
 | Feature | Description |
 |---|---|
-| `silent_window_seconds` | Suppress `task.complete` for tasks shorter than N seconds (currently hardcoded to 3s) |
-| `desktop_notifications` toggle | Independent toggle for notifications vs sounds (currently tied together) |
-| `default_pack` / `active_pack` migration | peon-ping renamed `active_pack` → `default_pack`; could follow suit |
-| `path_rules` | Assign different packs per project directory via glob patterns |
-| `pack_rotation` / `pack_rotation_mode` | Rotate through packs randomly or round-robin across sessions |
-| `headphones_only` | Only play sounds when headphones detected (suppress on built-in speakers) |
-| `suppress_subagent_complete` | Suppress completion sounds from sub-agent sessions |
+| ~~`silent_window_seconds`~~ | ~~Suppress `task.complete` for tasks shorter than N seconds (now configurable, default 0)~~ ✅ |
+| ~~`desktop_notifications` toggle~~ | ~~Independent toggle for notifications vs sounds~~ ✅ |
+| ~~`default_pack` / `active_pack` migration~~ | ~~Renamed `active_pack` → `default_pack` with automatic migration~~ ✅ |
+| ~~`path_rules`~~ | ~~Config field added (assign different packs per project directory via glob patterns)~~ ✅ |
+| ~~`pack_rotation` / `pack_rotation_mode`~~ | ~~Config fields added (rotate through packs randomly or round-robin)~~ ✅ |
+| ~~`headphones_only`~~ | ~~Config field added (only play sounds when headphones detected)~~ ✅ |
+| ~~`suppress_subagent_complete`~~ | ~~Config field added with UI toggle~~ ✅ |
+| ~~`session_ttl_days`~~ | ~~Config field added (expire stale session pack assignments, default 7)~~ ✅ |
 
 ### 3. Pack Features
 
@@ -83,8 +84,8 @@ Push notifications via ntfy.sh, Pushover, or Telegram. Would require:
 
 1. ~~**Hook up `task.error`** — trivial, just add a `tool_execution_end` handler checking `isError`~~ ✅
 2. ~~**Better desktop notifications** — replace OSC with `ctx.ui.notify()` and/or platform-native commands~~ ✅
-3. **`silent_window_seconds`** config — make the short-task filter configurable instead of hardcoded 3s
-4. **`path_rules`** — per-project pack selection using `ctx.cwd`
-5. **Pack rotation** — random/round-robin across sessions
+3. ~~**Configuration parity** — all upstream config fields added (`silent_window_seconds`, `default_pack` migration, `suppress_subagent_complete`, `pack_rotation`, `pack_rotation_mode`, `path_rules`, `session_ttl_days`, `headphones_only`), wired `silent_window_seconds` into `agent_end` handler, added UI toggles~~ ✅
+4. **`path_rules`** — per-project pack selection behavior using `ctx.cwd`
+5. **Pack rotation** — random/round-robin behavior across sessions
 6. **Mobile notifications** — simple HTTP POST to ntfy.sh
 7. **Peon Trainer** — fun but substantial feature
