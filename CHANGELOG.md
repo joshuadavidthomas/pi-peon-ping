@@ -25,13 +25,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - Added `task.error` sound on tool execution failures — listens for `tool_execution_end` events where `isError` is true
 - Added [remote relay](https://github.com/PeonPing/peon-ping#remote-development-ssh--devcontainers--codespaces) support — sounds play on your local machine when pi runs over SSH, in a devcontainer, or in Codespaces
 - Added `relay_mode` setting to `/peon` settings panel (`auto` / `local` / `relay`)
-- Added `silent_window_seconds` config — suppress `task.complete` for tasks shorter than N seconds (replaces hardcoded 3s filter, default `0`)
-- Added `suppress_subagent_complete` config — suppress completion sounds from sub-agent sessions (default `false`)
-- Added `pack_rotation` and `pack_rotation_mode` config — rotate through packs randomly or round-robin across sessions
-- Added `path_rules` config — assign different sound packs per project directory via glob patterns
-- Added `session_ttl_days` config — expire stale session pack assignments (default `7`)
-- Added `headphones_only` config — only play sounds when headphones are detected (default `false`)
-- Added UI settings for silent window, headphones only, and suppress sub-agent complete
+- Added `silent_window_seconds` config — suppress `task.complete` for tasks shorter than N seconds (default `0`)
 
 ### Changed
 

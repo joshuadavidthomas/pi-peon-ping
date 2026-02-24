@@ -96,14 +96,8 @@ Edit `~/.config/peon-ping/config.json` or use the `/peon` settings panel:
 | `enabled` | `true` | Master on/off switch |
 | `desktop_notifications` | `true` | Show system notifications on task complete |
 | `silent_window_seconds` | `0` | Suppress `task.complete` for tasks shorter than N seconds |
-| `suppress_subagent_complete` | `false` | Suppress completion sounds from sub-agent sessions |
-| `headphones_only` | `false` | Only play sounds when headphones are detected |
 | `annoyed_threshold` | `3` | Number of rapid prompts to trigger spam detection |
 | `annoyed_window_seconds` | `10` | Time window for spam detection |
-| `pack_rotation` | `[]` | List of packs to rotate through across sessions |
-| `pack_rotation_mode` | `"random"` | Rotation mode: `"random"` or `"round-robin"` |
-| `path_rules` | `[]` | Per-project pack assignment (e.g. `[{"pattern": "**/myproject", "pack": "glados"}]`) |
-| `session_ttl_days` | `7` | Expire stale session pack assignments |
 | `relay_mode` | `"auto"` | Relay mode: `"auto"`, `"local"`, or `"relay"` |
 
 > **Note:** If you have an existing config with `active_pack`, it will be automatically migrated to `default_pack` on next load.
