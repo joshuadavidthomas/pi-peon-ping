@@ -122,7 +122,7 @@ export function sendNotification(
     return;
   }
 
-  const packPath = join(getPacksDir(), config.active_pack);
+  const packPath = join(getPacksDir(), config.default_pack);
   const iconPath = resolveIcon(packPath);
   const sent = sendDesktopNotification(title, body, { iconPath });
   if (!sent && uiNotify) {

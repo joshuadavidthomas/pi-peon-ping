@@ -82,16 +82,12 @@ describe("pickSound", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("returns null for disabled category", () => {
+  it("returns null for disabled category", async () => {
+    const { DEFAULT_CONFIG } = await import("../src/constants");
     const config: PeonConfig = {
-      active_pack: "test-pack",
-      volume: 0.5,
-      enabled: true,
-      desktop_notifications: true,
+      ...DEFAULT_CONFIG,
+      default_pack: "test-pack",
       categories: { "session.start": false },
-      annoyed_threshold: 3,
-      annoyed_window_seconds: 10,
-      relay_mode: "auto",
     };
     const state: PeonState = {
       paused: false,

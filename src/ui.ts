@@ -79,7 +79,7 @@ export function buildSettingsItems(): SettingItem[] {
   const config = loadConfig();
   const state = loadState();
   const packs = listPacks();
-  const activePack = packs.find((p) => p.name === config.active_pack);
+  const activePack = packs.find((p) => p.name === config.default_pack);
 
   const session = detectRemoteSession();
   const relayUrl = getRelayUrl(config.relay_mode);
@@ -108,19 +108,19 @@ export function buildSettingsItems(): SettingItem[] {
       id: "pack",
       label: "Sound pack",
       description: `${packs.length} installed`,
-      currentValue: activePack?.displayName || config.active_pack,
+      currentValue: activePack?.displayName || config.default_pack,
       submenu: (_current: string, done: (val?: string) => void) => {
         if (packs.length === 0) {
           done();
           return { render: () => ["No packs installed"], invalidate() {}, handleInput() {} } as Component;
         }
         return createPackPickerSubmenu(
-          config.active_pack,
+          config.default_pack,
           packs,
           getSettingsListTheme(),
           (name) => {
             const cfg = loadConfig();
-            cfg.active_pack = name;
+            cfg.default_pack = name;
             saveConfig(cfg);
             const pack = packs.find((p) => p.name === name);
             done(pack?.displayName || name);
@@ -142,6 +142,14 @@ export function buildSettingsItems(): SettingItem[] {
       currentValue: config.desktop_notifications ? "on" : "off",
       values: ["on", "off"],
     },
+    {
+      id: "silent_window_seconds",
+      label: "Silent window",
+      description: "Suppress task.complete for tasks shorter than N seconds",
+      currentValue: `${config.silent_window_seconds}s`,
+      values: ["0s", "1s", "2s", "3s", "5s", "10s", "15s", "30s"],
+    },
+
   ];
 
   for (const [cat, label] of Object.entries(CATEGORY_LABELS)) {
@@ -214,8 +222,8 @@ export async function runInstall(
 
         if (installed > 0) {
           const config = loadConfig();
-          if (!listPacks().find((p) => p.name === config.active_pack)) {
-            config.active_pack = names[0];
+          if (!listPacks().find((p) => p.name === config.default_pack)) {
+            config.default_pack = names[0];
             saveConfig(config);
           }
         }
@@ -277,6 +285,10 @@ export function createSettingsPanel(
         const cat = id.slice(4);
         const config = loadConfig();
         config.categories[cat] = newValue === "on";
+        saveConfig(config);
+      } else if (id === "silent_window_seconds") {
+        const config = loadConfig();
+        config.silent_window_seconds = parseInt(newValue, 10);
         saveConfig(config);
       } else if (id === "preview") {
         const config = loadConfig();

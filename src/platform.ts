@@ -31,8 +31,3 @@ export function detectLinuxPlayer(): string | null {
   cachedLinuxPlayer = null;
   return null;
 }
-
-/** Reset the cached linux player (for testing). */
-export function resetLinuxPlayerCache(): void {
-  cachedLinuxPlayer = undefined;
-}

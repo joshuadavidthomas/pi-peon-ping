@@ -32,15 +32,16 @@ The extension defines `task.error`, `input.required`, and `resource.limit` categ
 
 ### 2. Configuration Options
 
-| Feature | Description |
-|---|---|
-| `silent_window_seconds` | Suppress `task.complete` for tasks shorter than N seconds (currently hardcoded to 3s) |
-| `desktop_notifications` toggle | Independent toggle for notifications vs sounds (currently tied together) |
-| `default_pack` / `active_pack` migration | peon-ping renamed `active_pack` → `default_pack`; could follow suit |
-| `path_rules` | Assign different packs per project directory via glob patterns |
-| `pack_rotation` / `pack_rotation_mode` | Rotate through packs randomly or round-robin across sessions |
-| `headphones_only` | Only play sounds when headphones detected (suppress on built-in speakers) |
-| `suppress_subagent_complete` | Suppress completion sounds from sub-agent sessions |
+| Feature | Status | Description |
+|---|---|---|
+| ~~`silent_window_seconds`~~ | ✅ | ~~Suppress `task.complete` for tasks shorter than N seconds (now configurable, default 0)~~ |
+| ~~`desktop_notifications` toggle~~ | ✅ | ~~Independent toggle for notifications vs sounds~~ |
+| ~~`default_pack` / `active_pack` migration~~ | ✅ | ~~Renamed `active_pack` → `default_pack` with automatic migration~~ |
+| `path_rules` | ⬜ | Assign different packs per project directory via glob patterns |
+| `pack_rotation` / `pack_rotation_mode` | ⬜ | Rotate through packs randomly or round-robin |
+| `headphones_only` | ⬜ | Only play sounds when headphones detected |
+| `suppress_subagent_complete` | ⬜ | Suppress task.complete from sub-agent sessions |
+| `session_ttl_days` | ⬜ | Expire stale session pack assignments |
 
 ### 3. Pack Features
 
@@ -83,8 +84,8 @@ Push notifications via ntfy.sh, Pushover, or Telegram. Would require:
 
 1. ~~**Hook up `task.error`** — trivial, just add a `tool_execution_end` handler checking `isError`~~ ✅
 2. ~~**Better desktop notifications** — replace OSC with `ctx.ui.notify()` and/or platform-native commands~~ ✅
-3. **`silent_window_seconds`** config — make the short-task filter configurable instead of hardcoded 3s
-4. **`path_rules`** — per-project pack selection using `ctx.cwd`
-5. **Pack rotation** — random/round-robin across sessions
+3. ~~**Configuration parity** — `silent_window_seconds` wired into `agent_end` handler, `default_pack` migration~~ ✅
+4. **`path_rules`** — per-project pack selection behavior using `ctx.cwd` (add config field + behavior together)
+5. **Pack rotation** — random/round-robin behavior across sessions (add config fields + behavior together)
 6. **Mobile notifications** — simple HTTP POST to ntfy.sh
 7. **Peon Trainer** — fun but substantial feature

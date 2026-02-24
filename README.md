@@ -13,6 +13,7 @@ A [pi coding agent](https://github.com/badlogic/pi-mono/tree/main/packages/codin
 |-------|---------------|
 | Session start | `session.start` — "Ready to work?" |
 | Agent starts working | `task.acknowledge` — "Work, work." |
+| Tool error | `task.error` — error sound |
 | Rapid prompts (≥3 in 10s) | `user.spam` — annoyed voice line |
 | Agent finishes | `task.complete` — completion sound + desktop notification |
 
@@ -83,6 +84,23 @@ The extension auto-detects SSH sessions, devcontainers, and Codespaces, and rout
 ## Config and data
 
 The extension also picks up existing packs from `~/.claude/hooks/peon-ping/` if you have a Claude Code installation. Config and state are stored in `~/.config/peon-ping/`.
+
+### Configuration options
+
+Edit `~/.config/peon-ping/config.json` or use the `/peon` settings panel:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `default_pack` | `"peon"` | Active sound pack |
+| `volume` | `0.5` | Sound volume (0.0–1.0) |
+| `enabled` | `true` | Master on/off switch |
+| `desktop_notifications` | `true` | Show system notifications on task complete |
+| `silent_window_seconds` | `0` | Suppress `task.complete` for tasks shorter than N seconds |
+| `annoyed_threshold` | `3` | Number of rapid prompts to trigger spam detection |
+| `annoyed_window_seconds` | `10` | Time window for spam detection |
+| `relay_mode` | `"auto"` | Relay mode: `"auto"`, `"local"`, or `"relay"` |
+
+> **Note:** If you have an existing config with `active_pack`, it will be automatically migrated to `default_pack` on next load.
 
 ## Development
 

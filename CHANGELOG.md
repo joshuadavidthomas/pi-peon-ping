@@ -25,6 +25,11 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 - Added `task.error` sound on tool execution failures — listens for `tool_execution_end` events where `isError` is true
 - Added [remote relay](https://github.com/PeonPing/peon-ping#remote-development-ssh--devcontainers--codespaces) support — sounds play on your local machine when pi runs over SSH, in a devcontainer, or in Codespaces
 - Added `relay_mode` setting to `/peon` settings panel (`auto` / `local` / `relay`)
+- Added `silent_window_seconds` config — suppress `task.complete` for tasks shorter than N seconds (default `0`)
+
+### Changed
+
+- Renamed `active_pack` config field to `default_pack` to match upstream peon-ping — existing configs are automatically migrated
 
 ## [0.1.0]
 

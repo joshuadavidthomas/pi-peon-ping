@@ -11,7 +11,7 @@ import {
 
 describe("constants", () => {
   it("DEFAULT_CONFIG has all required fields", () => {
-    expect(DEFAULT_CONFIG.active_pack).toBe("peon");
+    expect(DEFAULT_CONFIG.default_pack).toBe("peon");
     expect(DEFAULT_CONFIG.volume).toBe(0.5);
     expect(DEFAULT_CONFIG.enabled).toBe(true);
     expect(DEFAULT_CONFIG.annoyed_threshold).toBe(3);

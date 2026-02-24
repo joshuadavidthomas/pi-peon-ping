@@ -10,15 +10,15 @@ export interface PackManifest {
 }
 
 export type RelayMode = "auto" | "local" | "relay";
-
 export interface PeonConfig {
-  active_pack: string;
+  default_pack: string;
   volume: number;
   enabled: boolean;
   desktop_notifications: boolean;
   categories: Record<string, boolean>;
   annoyed_threshold: number;
   annoyed_window_seconds: number;
+  silent_window_seconds: number;
   relay_mode: RelayMode;
 }
 
