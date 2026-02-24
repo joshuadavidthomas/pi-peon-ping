@@ -13,35 +13,6 @@ describe("config parity with upstream peon-ping", () => {
       expect(DEFAULT_CONFIG.silent_window_seconds).toBe(0);
     });
 
-    it("DEFAULT_CONFIG has suppress_subagent_complete defaulting to false", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      expect(DEFAULT_CONFIG.suppress_subagent_complete).toBe(false);
-    });
-
-    it("DEFAULT_CONFIG has pack_rotation defaulting to empty array", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      expect(DEFAULT_CONFIG.pack_rotation).toEqual([]);
-    });
-
-    it("DEFAULT_CONFIG has pack_rotation_mode defaulting to 'random'", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      expect(DEFAULT_CONFIG.pack_rotation_mode).toBe("random");
-    });
-
-    it("DEFAULT_CONFIG has path_rules defaulting to empty array", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      expect(DEFAULT_CONFIG.path_rules).toEqual([]);
-    });
-
-    it("DEFAULT_CONFIG has session_ttl_days defaulting to 7", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      expect(DEFAULT_CONFIG.session_ttl_days).toBe(7);
-    });
-
-    it("DEFAULT_CONFIG has headphones_only defaulting to false", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      expect(DEFAULT_CONFIG.headphones_only).toBe(false);
-    });
   });
 
   describe("active_pack → default_pack migration", () => {
@@ -82,22 +53,12 @@ describe("config parity with upstream peon-ping", () => {
 
       expect(merged.default_pack).toBe("glados");
       expect(merged.silent_window_seconds).toBe(0);
-      expect(merged.suppress_subagent_complete).toBe(false);
-      expect(merged.pack_rotation).toEqual([]);
-      expect(merged.pack_rotation_mode).toBe("random");
-      expect(merged.path_rules).toEqual([]);
-      expect(merged.session_ttl_days).toBe(7);
-      expect(merged.headphones_only).toBe(false);
     });
 
     it("user overrides for new fields are preserved", async () => {
       const { DEFAULT_CONFIG } = await import("../src/constants");
       const partial = {
         silent_window_seconds: 5,
-        headphones_only: true,
-        pack_rotation: ["peon", "glados"],
-        pack_rotation_mode: "round-robin" as const,
-        path_rules: [{ pattern: "**/myproject", pack: "glados" }],
       };
       const merged = {
         ...DEFAULT_CONFIG,
@@ -106,33 +67,6 @@ describe("config parity with upstream peon-ping", () => {
       };
 
       expect(merged.silent_window_seconds).toBe(5);
-      expect(merged.headphones_only).toBe(true);
-      expect(merged.pack_rotation).toEqual(["peon", "glados"]);
-      expect(merged.pack_rotation_mode).toBe("round-robin");
-      expect(merged.path_rules).toEqual([{ pattern: "**/myproject", pack: "glados" }]);
-    });
-  });
-
-  describe("PathRule type", () => {
-    it("path_rules entries have pattern and pack fields", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      type PathRule = (typeof DEFAULT_CONFIG.path_rules)[number];
-
-      const rule: PathRule = { pattern: "**/project", pack: "glados" };
-      expect(rule.pattern).toBe("**/project");
-      expect(rule.pack).toBe("glados");
-    });
-  });
-
-  describe("PackRotationMode type", () => {
-    it("accepts 'random' and 'round-robin'", async () => {
-      const { DEFAULT_CONFIG } = await import("../src/constants");
-      type Mode = typeof DEFAULT_CONFIG.pack_rotation_mode;
-
-      const random: Mode = "random";
-      const roundRobin: Mode = "round-robin";
-      expect(random).toBe("random");
-      expect(roundRobin).toBe("round-robin");
     });
   });
 
@@ -176,20 +110,6 @@ describe("config parity with upstream peon-ping", () => {
       expect(silentItem!.label).toBe("Silent window");
     });
 
-    it("buildSettingsItems includes headphones_only", async () => {
-      const { buildSettingsItems } = await import("../src/ui");
-      const items = buildSettingsItems();
-      const item = items.find((i: any) => i.id === "headphones_only");
-      expect(item).toBeDefined();
-      expect(item!.label).toBe("Headphones only");
-    });
 
-    it("buildSettingsItems includes suppress_subagent_complete", async () => {
-      const { buildSettingsItems } = await import("../src/ui");
-      const items = buildSettingsItems();
-      const item = items.find((i: any) => i.id === "suppress_subagent_complete");
-      expect(item).toBeDefined();
-      expect(item!.label).toBe("Suppress sub-agent complete");
-    });
   });
 });

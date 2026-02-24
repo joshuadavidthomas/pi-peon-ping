@@ -26,12 +26,6 @@ export const DEFAULT_CONFIG: PeonConfig = {
   annoyed_threshold: 3,
   annoyed_window_seconds: 10,
   silent_window_seconds: 0,
-  suppress_subagent_complete: false,
-  pack_rotation: [],
-  pack_rotation_mode: "random",
-  path_rules: [],
-  session_ttl_days: 7,
-  headphones_only: false,
   relay_mode: "auto",
 };
 

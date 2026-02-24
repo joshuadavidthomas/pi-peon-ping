@@ -149,20 +149,7 @@ export function buildSettingsItems(): SettingItem[] {
       currentValue: `${config.silent_window_seconds}s`,
       values: ["0s", "1s", "2s", "3s", "5s", "10s", "15s", "30s"],
     },
-    {
-      id: "headphones_only",
-      label: "Headphones only",
-      description: "Only play sounds when headphones are detected",
-      currentValue: config.headphones_only ? "on" : "off",
-      values: ["on", "off"],
-    },
-    {
-      id: "suppress_subagent_complete",
-      label: "Suppress sub-agent complete",
-      description: "Suppress task.complete from sub-agent sessions",
-      currentValue: config.suppress_subagent_complete ? "on" : "off",
-      values: ["on", "off"],
-    },
+
   ];
 
   for (const [cat, label] of Object.entries(CATEGORY_LABELS)) {
@@ -302,14 +289,6 @@ export function createSettingsPanel(
       } else if (id === "silent_window_seconds") {
         const config = loadConfig();
         config.silent_window_seconds = parseInt(newValue, 10);
-        saveConfig(config);
-      } else if (id === "headphones_only") {
-        const config = loadConfig();
-        config.headphones_only = newValue === "on";
-        saveConfig(config);
-      } else if (id === "suppress_subagent_complete") {
-        const config = loadConfig();
-        config.suppress_subagent_complete = newValue === "on";
         saveConfig(config);
       } else if (id === "preview") {
         const config = loadConfig();

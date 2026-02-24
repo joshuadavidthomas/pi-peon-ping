@@ -10,13 +10,6 @@ export interface PackManifest {
 }
 
 export type RelayMode = "auto" | "local" | "relay";
-export type PackRotationMode = "random" | "round-robin";
-
-export interface PathRule {
-  pattern: string;
-  pack: string;
-}
-
 export interface PeonConfig {
   default_pack: string;
   volume: number;
@@ -26,12 +19,6 @@ export interface PeonConfig {
   annoyed_threshold: number;
   annoyed_window_seconds: number;
   silent_window_seconds: number;
-  suppress_subagent_complete: boolean;
-  pack_rotation: string[];
-  pack_rotation_mode: PackRotationMode;
-  path_rules: PathRule[];
-  session_ttl_days: number;
-  headphones_only: boolean;
   relay_mode: RelayMode;
 }
 
