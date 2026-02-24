@@ -150,19 +150,12 @@ describe("config parity with upstream peon-ping", () => {
       };
     });
 
-    it("agent_end uses silent_window_seconds from config instead of hardcoded 3s", async () => {
-      // The hardcoded value was 3000ms. With silent_window_seconds=0 (default),
-      // even very short sessions should trigger task.complete.
-      // We test this indirectly by verifying the handler exists and processes
-      // without the hardcoded check blocking it.
+    it("agent_end handler completes without throwing", async () => {
       const { default: initExtension } = await import("../src/index");
       initExtension(mockPi);
 
       expect(handlers["agent_end"]).toBeDefined();
 
-      // With default config (silent_window_seconds=0), a session that started
-      // 1 second ago should NOT be filtered out (previously hardcoded to 3s).
-      // This should proceed past the time check (won't throw).
       await handlers["agent_end"](
         { type: "agent_end" },
         {
