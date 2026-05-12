@@ -11,12 +11,26 @@ import {
 } from "@mariozechner/pi-tui";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { detectPreferredLanguageTags } from "./locale";
+import {
+  buildRegistryPackDescription,
+  buildRegistryPackLabel,
+  filterRegistryPacks,
+  INSTALL_PICKER_DEFAULTS_VALUE,
+  INSTALL_PICKER_LOCALE_VALUE,
+  resolvePickerInstallNames,
+  resolveRequestedPackNames,
+  selectLocaleInstallPackNames,
+  toggleSelectedPackName,
+} from "./install-options";
 import { killPreviousSound, playSound } from "./audio";
 import { loadConfig, loadState, saveConfig, saveState } from "./config";
 import { CATEGORY_LABELS, DEFAULT_PACK_NAMES, VOLUME_STEPS } from "./constants";
 import { downloadPack, fetchRegistry, getPacksDir, listPacks, loadManifest, pickSound } from "./packs";
 import { detectRemoteSession, getRelayUrl } from "./relay";
-import type { RelayMode } from "./types";
+import type { Registry, RelayMode } from "./types";
+
+const REGISTRY_PICKER_DEFAULT_VISIBLE = 12;
 
 export function createPackPickerSubmenu(
   currentPack: string,
@@ -155,7 +169,7 @@ export function buildSettingsItems(): SettingItem[] {
   for (const [cat, label] of Object.entries(CATEGORY_LABELS)) {
     items.push({
       id: `cat:${cat}`,
-      label: label,
+      label,
       currentValue: config.categories[cat] !== false ? "on" : "off",
       values: ["on", "off"],
     });
@@ -171,13 +185,148 @@ export function buildSettingsItems(): SettingItem[] {
   return items;
 }
 
-export async function runInstall(
-  packNames: string[],
+function isPrintableSearchChar(data: string): boolean {
+  return data.length === 1 && data >= " " && data !== "\u007f";
+}
+
+async function promptInstallSelection(
+  ctx: { ui: { custom: any } },
+  registry: Registry,
+  preferredLanguages: string[],
+): Promise<string[] | null> {
+  return ctx.ui.custom((tui: any, theme: any, _kb: any, done: (r: string[] | null) => void) => {
+    const localePackNames = selectLocaleInstallPackNames(registry, preferredLanguages);
+    let query = "";
+    let selectedNames: string[] = [];
+    let selectedValue: string | null = null;
+
+    const selectListTheme = {
+      selectedPrefix: (t: string) => theme.fg("accent", t),
+      selectedText: (t: string) => theme.fg("accent", t),
+      description: (t: string) => theme.fg("muted", t),
+      scrollInfo: (t: string) => theme.fg("dim", t),
+      noMatch: (t: string) => theme.fg("warning", t),
+    };
+
+    let list = new SelectList([], REGISTRY_PICKER_DEFAULT_VISIBLE, selectListTheme);
+
+    const createItems = () => {
+      const filteredPacks = filterRegistryPacks(registry, preferredLanguages, query);
+      return [
+        ...(localePackNames.length > 0
+          ? [{
+              value: INSTALL_PICKER_LOCALE_VALUE,
+              label: `Install locale-aware packs (${localePackNames.length})`,
+              description: preferredLanguages.join(", "),
+            }]
+          : []),
+        {
+          value: INSTALL_PICKER_DEFAULTS_VALUE,
+          label: `Install starter packs (${DEFAULT_PACK_NAMES.length})`,
+          description: "Original curated bundle",
+        },
+        ...filteredPacks.map((pack) => ({
+          value: pack.name,
+          label: `${selectedNames.includes(pack.name) ? "[x]" : "[ ]"} ${buildRegistryPackLabel(pack)}`,
+          description: buildRegistryPackDescription(pack) || pack.description || undefined,
+        })),
+      ];
+    };
+
+    const wireList = (nextList: SelectList) => {
+      nextList.onSelectionChange = (item) => {
+        selectedValue = item.value;
+      };
+      nextList.onSelect = (item) => {
+        done(resolvePickerInstallNames(selectedNames, item.value, localePackNames));
+      };
+      nextList.onCancel = () => done(null);
+    };
+
+    const rebuildList = () => {
+      const items = createItems();
+      const nextList = new SelectList(
+        items,
+        Math.min(Math.max(items.length, 1), REGISTRY_PICKER_DEFAULT_VISIBLE),
+        selectListTheme,
+      );
+      wireList(nextList);
+
+      const selectedIndex = selectedValue
+        ? items.findIndex((item) => item.value === selectedValue)
+        : 0;
+      if (selectedIndex >= 0) nextList.setSelectedIndex(selectedIndex);
+
+      list = nextList;
+      selectedValue = list.getSelectedItem()?.value || null;
+      tui.requestRender();
+    };
+
+    rebuildList();
+
+    return {
+      render(width: number) {
+        const selectionSummary = selectedNames.length > 0
+          ? `Selected (${selectedNames.length}): ${selectedNames.slice(0, 4).join(", ")}${selectedNames.length > 4 ? "…" : ""}`
+          : "Selected: none";
+
+        return [
+          theme.fg("accent", "OpenPeon packs"),
+          theme.fg("muted", `Locale priority: ${preferredLanguages.join(", ") || "system default"}`),
+          theme.fg("muted", `Search: ${query || "type to filter packs"}`),
+          theme.fg("muted", selectionSummary),
+          ...list.render(width),
+          theme.fg("dim", "Type to filter • space toggle pack • enter install • esc cancel"),
+        ];
+      },
+      invalidate() {
+        list.invalidate();
+      },
+      handleInput(data: string) {
+        if (data === "\u007f" || data === "\b") {
+          if (query.length > 0) {
+            query = query.slice(0, -1);
+            rebuildList();
+          }
+          return;
+        }
+        if (data === "\u0015") {
+          query = "";
+          rebuildList();
+          return;
+        }
+        if (data === " ") {
+          const current = list.getSelectedItem();
+          if (current && current.value !== INSTALL_PICKER_LOCALE_VALUE && current.value !== INSTALL_PICKER_DEFAULTS_VALUE) {
+            selectedNames = toggleSelectedPackName(selectedNames, current.value);
+            selectedValue = current.value;
+            rebuildList();
+          }
+          return;
+        }
+        if (isPrintableSearchChar(data)) {
+          query += data;
+          rebuildList();
+          return;
+        }
+        list.handleInput(data);
+        selectedValue = list.getSelectedItem()?.value || selectedValue;
+        tui.requestRender();
+      },
+    };
+  });
+}
+
+async function installSelectedPacks(
+  names: string[],
+  registry: Registry | null,
   ctx: { ui: { custom: any; notify: (msg: string, level: "info" | "warning" | "error") => void } },
   onInstallStart: () => void,
   onInstallEnd: () => void,
-): Promise<void> {
-  const result: { installed: number; total: number } | null = await ctx.ui.custom(
+): Promise<{ installed: number; total: number } | null> {
+  if (names.length === 0) return { installed: 0, total: 0 };
+
+  return ctx.ui.custom(
     (tui: any, theme: any, _kb: any, done: (r: { installed: number; total: number } | null) => void) => {
       const container = new Container();
       const borderColor = (s: string) => theme.fg("border", s);
@@ -188,7 +337,7 @@ export async function runInstall(
         tui,
         (s: string) => theme.fg("accent", s),
         (s: string) => theme.fg("muted", s),
-        "Fetching pack registry...",
+        "Preparing pack install...",
       );
       container.addChild(loader);
 
@@ -202,13 +351,8 @@ export async function runInstall(
       const doInstall = async () => {
         onInstallStart();
 
-        const registry = await fetchRegistry();
-        if (loader.aborted) return;
-
-        const names = packNames.length > 0 ? packNames : DEFAULT_PACK_NAMES;
-
         let installed = 0;
-        for (let i = 0; i < names.length; i++) {
+        for (let i = 0; i < names.length; i += 1) {
           if (loader.aborted) break;
 
           const name = names[i];
@@ -217,7 +361,7 @@ export async function runInstall(
           const ok = await downloadPack(name, registry, (msg) => {
             if (!loader.aborted) loader.setMessage(`[${i + 1}/${names.length}] ${msg}`);
           });
-          if (ok) installed++;
+          if (ok) installed += 1;
         }
 
         if (installed > 0) {
@@ -238,6 +382,37 @@ export async function runInstall(
       return container;
     },
   );
+}
+
+export async function runInstall(
+  packNames: string[],
+  ctx: { ui: { custom: any; notify: (msg: string, level: "info" | "warning" | "error") => void } },
+  onInstallStart: () => void,
+  onInstallEnd: () => void,
+): Promise<void> {
+  const preferredLanguages = detectPreferredLanguageTags();
+  const registry = await fetchRegistry();
+
+  let names = resolveRequestedPackNames(packNames, registry, preferredLanguages);
+  if (names === null) {
+    if (!registry) {
+      names = [...DEFAULT_PACK_NAMES];
+    } else {
+      names = await promptInstallSelection(ctx, registry, preferredLanguages);
+    }
+  }
+
+  if (!names) {
+    ctx.ui.notify("peon-ping: install cancelled", "info");
+    return;
+  }
+
+  if (names.length === 0) {
+    ctx.ui.notify("peon-ping: no locale-aware packs found for this system", "warning");
+    return;
+  }
+
+  const result = await installSelectedPacks(names, registry, ctx, onInstallStart, onInstallEnd);
 
   if (result) {
     ctx.ui.notify(

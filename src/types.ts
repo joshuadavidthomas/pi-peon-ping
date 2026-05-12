@@ -30,8 +30,24 @@ export interface PeonState {
   session_start_time: number;
 }
 
+export type TrustTier = "official" | "verified" | "community" | string;
+
+export interface RegistryPackAuthor {
+  name?: string;
+  github?: string;
+}
+
 export interface RegistryPack {
   name: string;
+  display_name?: string;
+  version?: string;
+  description?: string;
+  language?: string;
+  license?: string;
+  sound_count?: number;
+  tags?: string[];
+  trust_tier?: TrustTier;
+  author?: RegistryPackAuthor;
   source_repo?: string;
   source_ref?: string;
   source_path?: string;
