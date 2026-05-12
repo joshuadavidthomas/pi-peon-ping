@@ -134,7 +134,7 @@ export default function (pi: ExtensionAPI) {
       if (!hasPacks() && !getRelayUrl(config.relay_mode)) {
         const ok = await ctx.ui.confirm(
           "peon-ping",
-          "No sound packs installed. Download default packs now?",
+          "No sound packs installed. Browse locale-aware OpenPeon packs now?",
         );
         if (ok) {
           await runInstall(
