@@ -15,9 +15,13 @@ import { detectPreferredLanguageTags } from "./locale";
 import {
   buildRegistryPackDescription,
   buildRegistryPackLabel,
+  filterRegistryPacks,
+  INSTALL_PICKER_DEFAULTS_VALUE,
+  INSTALL_PICKER_LOCALE_VALUE,
+  resolvePickerInstallNames,
   resolveRequestedPackNames,
   selectLocaleInstallPackNames,
-  sortRegistryPacksForLocale,
+  toggleSelectedPackName,
 } from "./install-options";
 import { killPreviousSound, playSound } from "./audio";
 import { loadConfig, loadState, saveConfig, saveState } from "./config";
@@ -192,63 +196,87 @@ async function promptInstallSelection(
 ): Promise<string[] | null> {
   return ctx.ui.custom((tui: any, theme: any, _kb: any, done: (r: string[] | null) => void) => {
     const localePackNames = selectLocaleInstallPackNames(registry, preferredLanguages);
-    const sortedPacks = sortRegistryPacksForLocale(registry, preferredLanguages);
-    const items = [
-      ...(localePackNames.length > 0
-        ? [{
-            value: "__locale__",
-            label: `Install locale-aware packs (${localePackNames.length})`,
-            description: preferredLanguages.join(", "),
-          }]
-        : []),
-      {
-        value: "__defaults__",
-        label: `Install starter packs (${DEFAULT_PACK_NAMES.length})`,
-        description: "Original curated bundle",
-      },
-      ...sortedPacks.map((pack) => ({
-        value: pack.name,
-        label: buildRegistryPackLabel(pack),
-        description: buildRegistryPackDescription(pack) || pack.description || undefined,
-      })),
-    ];
+    let query = "";
+    let selectedNames: string[] = [];
+    let selectedValue: string | null = null;
 
-    const list = new SelectList(items, Math.min(Math.max(items.length, 1), REGISTRY_PICKER_DEFAULT_VISIBLE), {
+    const selectListTheme = {
       selectedPrefix: (t: string) => theme.fg("accent", t),
       selectedText: (t: string) => theme.fg("accent", t),
       description: (t: string) => theme.fg("muted", t),
       scrollInfo: (t: string) => theme.fg("dim", t),
       noMatch: (t: string) => theme.fg("warning", t),
-    });
+    };
 
-    let query = "";
-    const setFilter = () => {
-      list.setFilter(query.trim());
-      list.invalidate();
+    let list = new SelectList([], REGISTRY_PICKER_DEFAULT_VISIBLE, selectListTheme);
+
+    const createItems = () => {
+      const filteredPacks = filterRegistryPacks(registry, preferredLanguages, query);
+      return [
+        ...(localePackNames.length > 0
+          ? [{
+              value: INSTALL_PICKER_LOCALE_VALUE,
+              label: `Install locale-aware packs (${localePackNames.length})`,
+              description: preferredLanguages.join(", "),
+            }]
+          : []),
+        {
+          value: INSTALL_PICKER_DEFAULTS_VALUE,
+          label: `Install starter packs (${DEFAULT_PACK_NAMES.length})`,
+          description: "Original curated bundle",
+        },
+        ...filteredPacks.map((pack) => ({
+          value: pack.name,
+          label: `${selectedNames.includes(pack.name) ? "[x]" : "[ ]"} ${buildRegistryPackLabel(pack)}`,
+          description: buildRegistryPackDescription(pack) || pack.description || undefined,
+        })),
+      ];
+    };
+
+    const wireList = (nextList: SelectList) => {
+      nextList.onSelectionChange = (item) => {
+        selectedValue = item.value;
+      };
+      nextList.onSelect = (item) => {
+        done(resolvePickerInstallNames(selectedNames, item.value, localePackNames));
+      };
+      nextList.onCancel = () => done(null);
+    };
+
+    const rebuildList = () => {
+      const items = createItems();
+      const nextList = new SelectList(
+        items,
+        Math.min(Math.max(items.length, 1), REGISTRY_PICKER_DEFAULT_VISIBLE),
+        selectListTheme,
+      );
+      wireList(nextList);
+
+      const selectedIndex = selectedValue
+        ? items.findIndex((item) => item.value === selectedValue)
+        : 0;
+      if (selectedIndex >= 0) nextList.setSelectedIndex(selectedIndex);
+
+      list = nextList;
+      selectedValue = list.getSelectedItem()?.value || null;
       tui.requestRender();
     };
 
-    list.onSelect = (item) => {
-      if (item.value === "__locale__") {
-        done(localePackNames);
-        return;
-      }
-      if (item.value === "__defaults__") {
-        done([...DEFAULT_PACK_NAMES]);
-        return;
-      }
-      done([item.value]);
-    };
-    list.onCancel = () => done(null);
+    rebuildList();
 
     return {
       render(width: number) {
+        const selectionSummary = selectedNames.length > 0
+          ? `Selected (${selectedNames.length}): ${selectedNames.slice(0, 4).join(", ")}${selectedNames.length > 4 ? "…" : ""}`
+          : "Selected: none";
+
         return [
           theme.fg("accent", "OpenPeon packs"),
           theme.fg("muted", `Locale priority: ${preferredLanguages.join(", ") || "system default"}`),
           theme.fg("muted", `Search: ${query || "type to filter packs"}`),
+          theme.fg("muted", selectionSummary),
           ...list.render(width),
-          theme.fg("dim", "Type to filter • ↑↓ navigate • enter install • esc cancel"),
+          theme.fg("dim", "Type to filter • space toggle pack • enter install • esc cancel"),
         ];
       },
       invalidate() {
@@ -258,21 +286,31 @@ async function promptInstallSelection(
         if (data === "\u007f" || data === "\b") {
           if (query.length > 0) {
             query = query.slice(0, -1);
-            setFilter();
+            rebuildList();
           }
           return;
         }
         if (data === "\u0015") {
           query = "";
-          setFilter();
+          rebuildList();
+          return;
+        }
+        if (data === " ") {
+          const current = list.getSelectedItem();
+          if (current && current.value !== INSTALL_PICKER_LOCALE_VALUE && current.value !== INSTALL_PICKER_DEFAULTS_VALUE) {
+            selectedNames = toggleSelectedPackName(selectedNames, current.value);
+            selectedValue = current.value;
+            rebuildList();
+          }
           return;
         }
         if (isPrintableSearchChar(data)) {
           query += data;
-          setFilter();
+          rebuildList();
           return;
         }
         list.handleInput(data);
+        selectedValue = list.getSelectedItem()?.value || selectedValue;
         tui.requestRender();
       },
     };

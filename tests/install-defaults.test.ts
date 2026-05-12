@@ -3,10 +3,15 @@ import { DEFAULT_PACK_NAMES } from "../src/constants";
 import {
   buildRegistryPackDescription,
   buildRegistryPackLabel,
+  filterRegistryPacks,
   getLocaleMatchScore,
+  INSTALL_PICKER_DEFAULTS_VALUE,
+  INSTALL_PICKER_LOCALE_VALUE,
+  resolvePickerInstallNames,
   resolveRequestedPackNames,
   selectLocaleInstallPackNames,
   sortRegistryPacksForLocale,
+  toggleSelectedPackName,
 } from "../src/install-options";
 import {
   getPreferredLanguageTags,
@@ -108,6 +113,30 @@ describe("registry install options", () => {
   it("sorts the full registry with locale and trust priority", () => {
     const sorted = sortRegistryPacksForLocale(registry, ["de-de", "de"]);
     expect(sorted.slice(0, 4).map((pack) => pack.name)).toEqual(["acolyte_de", "peon_de", "stromberg", "aoe2"]);
+  });
+
+  it("filters packs by search terms across display names and descriptions", () => {
+    expect(filterRegistryPacks(registry, ["de-de", "de"], "strom").map((pack) => pack.name))
+      .toEqual(["stromberg"]);
+    expect(filterRegistryPacks(registry, ["de-de", "de"], "age empires").map((pack) => pack.name))
+      .toEqual(["aoe2"]);
+  });
+
+  it("toggles selected packs for multi-select install", () => {
+    expect(toggleSelectedPackName([], "peon_de")).toEqual(["peon_de"]);
+    expect(toggleSelectedPackName(["peon_de"], "peon_de")).toEqual([]);
+    expect(toggleSelectedPackName(["peon_de"], "stromberg")).toEqual(["peon_de", "stromberg"]);
+  });
+
+  it("resolves picker installation from current selection or highlighted action", () => {
+    expect(resolvePickerInstallNames(["peon_de", "stromberg"], "aoe2", ["acolyte_de", "peon_de"]))
+      .toEqual(["peon_de", "stromberg"]);
+    expect(resolvePickerInstallNames([], INSTALL_PICKER_LOCALE_VALUE, ["acolyte_de", "peon_de"]))
+      .toEqual(["acolyte_de", "peon_de"]);
+    expect(resolvePickerInstallNames([], INSTALL_PICKER_DEFAULTS_VALUE, ["acolyte_de", "peon_de"]))
+      .toEqual(DEFAULT_PACK_NAMES);
+    expect(resolvePickerInstallNames([], "stromberg", ["acolyte_de", "peon_de"]))
+      .toEqual(["stromberg"]);
   });
 
   it("resolves install shortcuts", () => {

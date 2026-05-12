@@ -18,7 +18,7 @@ A [pi coding agent](https://github.com/badlogic/pi-mono/tree/main/packages/codin
 | Agent finishes | `task.complete` — completion sound + desktop notification |
 
 - `/peon` opens a settings panel to toggle sounds, switch packs, adjust volume, and enable/disable individual categories
-- `/peon install` opens a locale-aware OpenPeon browser, sorted by your system language, with type-to-filter search
+- `/peon install` opens a locale-aware OpenPeon browser, sorted by your system language, with type-to-filter search and multi-select install
 - `/peon install locale` installs every registry pack matching your system language preferences
 - `/peon install defaults` downloads the original 10 starter packs from the [peon-ping registry](https://peonping.github.io/registry/)
 - Browsing installed packs previews each one as you scroll
@@ -68,7 +68,7 @@ On first run, the extension will prompt you to browse locale-aware sound packs. 
 Useful install modes:
 
 ```
-/peon install           # browse all OpenPeon packs, locale-aware, with search
+/peon install           # browse all OpenPeon packs, locale-aware, searchable, multi-select
 /peon install locale    # install every pack matching your system language(s)
 /peon install defaults  # install the original starter bundle
 /peon install peon_de stromberg

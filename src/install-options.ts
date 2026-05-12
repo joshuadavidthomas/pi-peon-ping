@@ -2,6 +2,9 @@ import { DEFAULT_PACK_NAMES } from "./constants";
 import { normalizeLanguageTag } from "./locale";
 import type { Registry, RegistryPack, TrustTier } from "./types";
 
+export const INSTALL_PICKER_LOCALE_VALUE = "__locale__";
+export const INSTALL_PICKER_DEFAULTS_VALUE = "__defaults__";
+
 const TRUST_RANK: Record<string, number> = {
   official: 0,
   verified: 1,
@@ -69,6 +72,75 @@ export function selectLocaleInstallPackNames(
   return sortRegistryPacksForLocale(registry, preferredLanguages)
     .filter((pack) => isLocaleAwarePack(pack, preferredLanguages))
     .map((pack) => pack.name);
+}
+
+function getPackSearchText(pack: RegistryPack): string {
+  return [
+    pack.name,
+    pack.display_name,
+    pack.language,
+    pack.description,
+    ...(pack.tags || []),
+    pack.author?.name,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function getSearchScore(pack: RegistryPack, query: string): number {
+  const loweredQuery = query.trim().toLowerCase();
+  if (!loweredQuery) return 0;
+
+  const name = pack.name.toLowerCase();
+  const displayName = (pack.display_name || "").toLowerCase();
+  const searchText = getPackSearchText(pack);
+
+  if (name === loweredQuery) return 4000;
+  if (displayName === loweredQuery) return 3900;
+  if (name.startsWith(loweredQuery)) return 3000;
+  if (displayName.startsWith(loweredQuery)) return 2900;
+  if (searchText.includes(loweredQuery)) return 2000;
+
+  const tokens = loweredQuery.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return 0;
+  if (tokens.every((token) => searchText.includes(token))) return 1000;
+
+  return -1;
+}
+
+export function filterRegistryPacks(
+  registry: Registry,
+  preferredLanguages: string[],
+  query: string,
+): RegistryPack[] {
+  return sortRegistryPacksForLocale(registry, preferredLanguages)
+    .map((pack) => ({ pack, score: getSearchScore(pack, query) }))
+    .filter((entry) => entry.score >= 0)
+    .sort((a, b) => {
+      const scoreDiff = b.score - a.score;
+      if (scoreDiff !== 0) return scoreDiff;
+      return 0;
+    })
+    .map((entry) => entry.pack);
+}
+
+export function toggleSelectedPackName(selectedNames: string[], packName: string): string[] {
+  return selectedNames.includes(packName)
+    ? selectedNames.filter((name) => name !== packName)
+    : [...selectedNames, packName];
+}
+
+export function resolvePickerInstallNames(
+  selectedNames: string[],
+  highlightedValue: string | null,
+  localePackNames: string[],
+): string[] {
+  if (selectedNames.length > 0) return [...selectedNames];
+  if (highlightedValue === INSTALL_PICKER_LOCALE_VALUE) return [...localePackNames];
+  if (highlightedValue === INSTALL_PICKER_DEFAULTS_VALUE) return [...DEFAULT_PACK_NAMES];
+  if (!highlightedValue) return [];
+  return [highlightedValue];
 }
 
 export function resolveRequestedPackNames(
