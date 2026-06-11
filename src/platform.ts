@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { platform as osPlatform } from "node:os";
 
-export type Platform = "mac" | "linux" | "wsl" | "unknown";
+export type Platform = "mac" | "linux" | "wsl" | "win32" | "unknown";
 
 export function detectPlatform(): Platform {
   const p = osPlatform();
@@ -14,6 +14,7 @@ export function detectPlatform(): Platform {
     } catch {}
     return "linux";
   }
+  if (p === "win32") return "win32";
   return "unknown";
 }
 

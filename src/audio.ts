@@ -33,11 +33,17 @@ export function playSound(file: string, volume: number): void {
       });
       break;
 
-    case "wsl": {
+    case "wsl":
+    case "win32": {
+      // Convert Unix/msys2 paths to Windows: /c/foo or \c\foo -> C:\foo, /mnt/c/foo -> C:\foo
+      const winFile = file
+        .replace(/^[\/\\]([a-zA-Z])[\/\\]/, (_, d) => `${d.toUpperCase()}:\\`)
+        .replace(/^\/mnt\/([a-zA-Z])\//, (_, d) => `${d.toUpperCase()}:\\`)
+        .replace(/\//g, "\\");
       const cmd = `
         Add-Type -AssemblyName PresentationCore
         $p = New-Object System.Windows.Media.MediaPlayer
-        $p.Open([Uri]::new('file:///${file.replace(/\//g, "\\")}'))
+        $p.Open([Uri]::new('file:///${winFile}'))
         $p.Volume = ${volume}
         Start-Sleep -Milliseconds 200
         $p.Play()
@@ -46,7 +52,6 @@ export function playSound(file: string, volume: number): void {
       `;
       child = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", cmd], {
         stdio: "ignore",
-        detached: true,
       });
       break;
     }

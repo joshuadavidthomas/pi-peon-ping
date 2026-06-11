@@ -5,7 +5,7 @@ import { platform as osPlatform } from "node:os";
 describe("detectPlatform", () => {
   it("returns a valid platform string", () => {
     const result = detectPlatform();
-    const valid: Platform[] = ["mac", "linux", "wsl", "unknown"];
+    const valid: Platform[] = ["mac", "linux", "wsl", "win32", "unknown"];
     expect(valid).toContain(result);
   });
 
@@ -18,6 +18,8 @@ describe("detectPlatform", () => {
     } else if (p === "linux") {
       // Could be "linux" or "wsl"
       expect(["linux", "wsl"]).toContain(result);
+    } else if (p === "win32") {
+      expect(result).toBe("win32");
     } else {
       expect(result).toBe("unknown");
     }
