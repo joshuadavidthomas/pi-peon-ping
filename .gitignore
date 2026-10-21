@@ -44,3 +44,6 @@ Thumbs.db
 # Lock files (bun.lock tracked)
 package-lock.json
 yarn.lock
+
+# Amp orb portals
+.amp/portals/*
