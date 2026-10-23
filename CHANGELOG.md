@@ -20,6 +20,11 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- `/peon install` now opens a searchable, multi-select browser for the whole OpenPeon registry, with packs in your system language listed first
+- Added `/peon install defaults` to install the original 10 starter packs, which `/peon install` used to do
+
 ## [0.2.0]
 
 ### Added
