@@ -22,6 +22,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ### Changed
 
+- **Breaking:** Requires pi 1.0 or newer. The extension now imports from `@earendil-works/pi-coding-agent` and `@earendil-works/pi-tui`, which replace the deprecated `@mariozechner/*` packages
+- `task.complete` now plays once when pi has finished all automatic work (`agent_settled`) instead of on every `agent_end`, and no longer plays when you interrupt a run with Escape
+- `task.acknowledge` and spam detection now trigger once per prompt (`before_agent_start`) instead of on every agent run, so retries and compaction no longer replay "Work, work" or count as rapid prompts
+- `task.error` no longer plays for failures of tool calls nested inside another tool
 - `/peon install` now opens a searchable, multi-select browser for the whole OpenPeon registry, with packs in your system language listed first
 - Added `/peon install defaults` to install the original 10 starter packs, which `/peon install` used to do
 

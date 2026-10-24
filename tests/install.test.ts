@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { initTheme } from "@mariozechner/pi-coding-agent";
-import { visibleWidth } from "@mariozechner/pi-tui";
+import { initTheme } from "@earendil-works/pi-coding-agent";
+import { visibleWidth } from "@earendil-works/pi-tui";
 import { detectLanguages } from "../src/locale";
 import { createInstallPicker } from "../src/ui";
 import type { Registry } from "../src/types";

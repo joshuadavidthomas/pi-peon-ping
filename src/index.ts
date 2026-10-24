@@ -7,7 +7,7 @@
  * /peon opens a settings panel. /peon install downloads packs.
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { basename } from "node:path";
 import { playCategorySound, sendNotification } from "./audio";
 import { ensureDirs, loadConfig, loadState, saveState } from "./config";
@@ -59,7 +59,9 @@ export default function (pi: ExtensionAPI) {
     playCategorySound("session.start", config, state);
   });
 
-  pi.on("agent_start", async (_event, ctx) => {
+  pi.on("before_agent_start", async (event, ctx) => {
+    if (event.messageType === "custom") return;
+
     config = loadConfig();
     state = loadState();
     if (!shouldPlaySounds(ctx)) return;
@@ -78,7 +80,7 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("tool_execution_end", async (event, ctx) => {
-    if (!event.isError) return;
+    if (!event.isError || event.parentToolCallId) return;
 
     config = loadConfig();
     state = loadState();
@@ -87,7 +89,9 @@ export default function (pi: ExtensionAPI) {
     playCategorySound("task.error", config, state);
   });
 
-  pi.on("agent_end", async (_event, ctx) => {
+  pi.on("agent_settled", async (event, ctx) => {
+    if (event.aborted) return;
+
     config = loadConfig();
     state = loadState();
     if (!shouldPlaySounds(ctx)) return;

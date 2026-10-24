@@ -1,10 +1,10 @@
 # pi-peon-ping
 
-A [pi coding agent](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent) extension for [peon-ping](https://github.com/PeonPing/peon-ping) sound notifications. Plays themed audio clips on lifecycle events using [OpenPeon](https://github.com/PeonPing/og-packs) sound packs (Warcraft III Peon, GLaDOS, Duke Nukem, StarCraft, and more).
+A [pi coding agent](https://github.com/earendil-works/pi/tree/main/packages/coding-agent) extension for [peon-ping](https://github.com/PeonPing/peon-ping) sound notifications. Plays themed audio clips on lifecycle events using [OpenPeon](https://github.com/PeonPing/og-packs) sound packs (Warcraft III Peon, GLaDOS, Duke Nukem, StarCraft, and more).
 
 ## Requirements
 
-- [pi](https://github.com/badlogic/pi-mono) >= 0.50.0
+- [pi](https://github.com/earendil-works/pi) >= 1.0.0
 - An audio player on your system (see [Platform support](#platform-support))
 
 ## Features
@@ -24,7 +24,7 @@ A [pi coding agent](https://github.com/badlogic/pi-mono/tree/main/packages/codin
 
 ## Installation
 
-Install as a [pi package](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/packages.md) globally:
+Install as a [pi package](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md) globally:
 
 ```bash
 pi install npm:pi-peon-ping

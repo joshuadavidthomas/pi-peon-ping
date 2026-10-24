@@ -84,14 +84,14 @@ describe("config parity with upstream peon-ping", () => {
       };
     });
 
-    it("agent_end handler completes without throwing", async () => {
+    it("agent_settled handler completes without throwing", async () => {
       const { default: initExtension } = await import("../src/index");
       initExtension(mockPi);
 
-      expect(handlers["agent_end"]).toBeDefined();
+      expect(handlers["agent_settled"]).toBeDefined();
 
-      await handlers["agent_end"](
-        { type: "agent_end" },
+      await handlers["agent_settled"](
+        { type: "agent_settled", aborted: false },
         {
           hasUI: true,
           cwd: "/tmp/test-project",

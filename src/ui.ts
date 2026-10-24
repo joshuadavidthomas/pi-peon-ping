@@ -1,4 +1,4 @@
-import { BorderedLoader, DynamicBorder, getSettingsListTheme, rawKeyHint } from "@mariozechner/pi-coding-agent";
+import { BorderedLoader, DynamicBorder, getSettingsListTheme, rawKeyHint } from "@earendil-works/pi-coding-agent";
 import {
   CancellableLoader,
   Container,
@@ -12,7 +12,7 @@ import {
   Spacer,
   Text,
   truncateToWidth,
-} from "@mariozechner/pi-tui";
+} from "@earendil-works/pi-tui";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { killPreviousSound, playSound } from "./audio";

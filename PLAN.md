@@ -7,8 +7,8 @@ Comparison of the current pi-peon-ping extension against the upstream peon-ping 
 | Feature | Notes |
 |---------|-------|
 | **session.start** sounds | On `session_start` event |
-| **task.acknowledge** sounds | On `agent_start` event |
-| **task.complete** sounds + notification | On `agent_end` event, with 5s debounce and 3s minimum session filter |
+| **task.acknowledge** sounds | On `before_agent_start` event (user prompts only) |
+| **task.complete** sounds + notification | On `agent_settled` event (skipped when aborted), with 5s debounce and 3s minimum session filter |
 | **user.spam** detection | 3+ rapid prompts in configurable window |
 | **Pack management** | Install from registry, switch packs via TUI |
 | **Volume control** | 0–100% in 10% steps via TUI |
