@@ -18,8 +18,9 @@ A [pi coding agent](https://github.com/badlogic/pi-mono/tree/main/packages/codin
 | Agent finishes | `task.complete` — completion sound + desktop notification |
 
 - `/peon` opens a settings panel to toggle sounds, switch packs, adjust volume, and enable/disable individual categories
-- `/peon install` downloads the default 10 packs from the [peon-ping registry](https://peonping.github.io/registry/)
-- Browsing packs previews each one as you scroll
+- `/peon install` browses the [OpenPeon registry](https://peonping.github.io/registry/): packs in your system language come first, type to search, space to select several
+- `/peon install defaults` downloads the original 10 starter packs
+- Browsing installed packs previews each one as you scroll
 
 ## Installation
 
@@ -60,7 +61,9 @@ git clone https://github.com/joshuadavidthomas/pi-peon-ping ~/.pi/agent/extensio
 On first run, the extension will prompt you to install sound packs. You can also install them manually:
 
 ```
-/peon install
+/peon install                     # browse and search the registry
+/peon install defaults            # the original 10 starter packs
+/peon install peon_de stromberg   # specific packs by name
 ```
 
 Open the settings panel:

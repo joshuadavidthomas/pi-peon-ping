@@ -32,6 +32,13 @@ export interface PeonState {
 
 export interface RegistryPack {
   name: string;
+  display_name?: string;
+  description?: string;
+  language?: string;
+  sound_count?: number;
+  tags?: string[];
+  trust_tier?: string;
+  author?: { name?: string };
   source_repo?: string;
   source_ref?: string;
   source_path?: string;
